@@ -1,0 +1,33 @@
+[package]
+name = "zkane"
+version = "0.1.0"
+edition = "2021"
+description = "ZKane privacy pool alkane contract"
+authors = ["ZKane Team"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+zkane-common = { path = "../../crates/zkane-common" }
+zkane-crypto = { path = "../../crates/zkane-crypto" }
+zkane-core = { path = "../../crates/zkane-core" }
+alkanes-runtime = { workspace = true }
+alkanes-support = { workspace = true }
+alkanes-macros = { workspace = true }
+metashrew-support = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+bitcoin = { workspace = true }
+
+[dev-dependencies]
+alkanes-runtime = { workspace = true, features = ["test-utils"] }
+once_cell = { workspace = true }
+wasm-bindgen-test = { workspace = true }
+hex_lit = { workspace = true }
+
+[features]
+default = []
+test-utils = []

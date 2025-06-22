@@ -1,0 +1,19 @@
+[package]
+name = "zkane-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core privacy pool logic for ZKane"
+authors = ["ZKane Team"]
+
+[dependencies]
+zkane-common = { path = "../zkane-common" }
+zkane-crypto = { path = "../zkane-crypto" }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+rand = { workspace = true }
+alkanes-support = { workspace = true }
+
+[dev-dependencies]
+hex_lit = { workspace = true }

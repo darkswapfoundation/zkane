@@ -1,0 +1,20 @@
+[package]
+name = "zkane-common"
+version = "0.1.0"
+edition = "2021"
+description = "Common types and utilities for ZKane privacy pools"
+authors = ["ZKane Team"]
+
+[dependencies]
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+hex = { workspace = true }
+ruint = { workspace = true }
+bitcoin = { workspace = true }
+alkanes-support = { workspace = true }
+rand = { workspace = true }
+thiserror = "1.0"
+
+[dev-dependencies]
+hex_lit = { workspace = true }
