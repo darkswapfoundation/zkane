@@ -5,7 +5,7 @@
 //! that matches the one used in your Noir circuits.
 
 use anyhow::Result;
-use ark_ff::{PrimeField, Field};
+use ark_ff::{PrimeField, Field, Zero};
 use ark_bn254::Fr as Bn254Fr;
 use ark_std::vec::Vec;
 

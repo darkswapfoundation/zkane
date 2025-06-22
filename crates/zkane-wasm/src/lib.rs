@@ -1,7 +1,63 @@
-//! ZKane WASM Bindings for Browser DApp Integration
+//! # ZKane WASM Bindings for Browser DApp Integration
 //!
-//! This crate provides WASM bindings for all ZKane functionality needed
-//! to build a browser-based privacy pool dapp.
+//! This crate provides WebAssembly (WASM) bindings for all ZKane functionality needed
+//! to build a browser-based privacy pool decentralized application (dapp). It exposes
+//! a JavaScript-compatible API that enables privacy-preserving transactions directly
+//! in web browsers.
+//!
+//! ## Overview
+//!
+//! The ZKane WASM bindings provide a complete interface for:
+//!
+//! - **Cryptographic Operations**: Secret/nullifier generation, commitment creation
+//! - **Deposit Management**: Creating and validating deposit notes
+//! - **Withdrawal Processing**: Proof generation and verification
+//! - **Pool Management**: Pool ID generation and registry operations
+//! - **Transaction Validation**: Output hash calculation for recipient validation
+//! - **Witness Envelope Support**: Large data storage for Bitcoin transactions
+//!
+//! ## Browser Compatibility
+//!
+//! This crate is designed to work in modern web browsers with WebAssembly support:
+//!
+//! - Chrome 57+, Firefox 52+, Safari 11+, Edge 16+
+//! - Requires `wasm-bindgen` and `wasm-pack` for building
+//! - Compatible with modern JavaScript frameworks (React, Vue, Angular)
+//! - Supports both ES modules and CommonJS
+//!
+//! ## Usage in JavaScript
+//!
+//! ```javascript
+//! import init, {
+//!     create_deposit_note,
+//!     generate_withdrawal_proof_placeholder,
+//!     hash_transaction_outputs
+//! } from './pkg/zkane_wasm.js';
+//!
+//! // Initialize the WASM module
+//! await init();
+//!
+//! // Create a deposit note
+//! const assetId = { block: 2, tx: 1 };
+//! const denomination = "1000000";
+//! const depositNote = create_deposit_note(assetId, denomination);
+//!
+//! console.log("Deposit created:", depositNote.commitment());
+//! ```
+//!
+//! ## Security Considerations
+//!
+//! - **Client-Side Cryptography**: All cryptographic operations run in the browser
+//! - **Memory Safety**: WASM provides memory isolation from JavaScript
+//! - **Secure Random Generation**: Uses browser's crypto.getRandomValues()
+//! - **No Network Dependencies**: All operations work offline
+//!
+//! ## Performance Notes
+//!
+//! - **WASM Overhead**: Some performance cost compared to native implementations
+//! - **Memory Usage**: Efficient memory management with automatic cleanup
+//! - **Bundle Size**: Optimized for minimal WASM binary size
+//! - **Initialization**: One-time WASM module initialization required
 
 use wasm_bindgen::prelude::*;
 use zkane_common::{
@@ -215,7 +271,7 @@ pub fn create_deposit_note(
         secret: hex::encode(deposit_note.secret.as_bytes()),
         nullifier: hex::encode(deposit_note.nullifier.as_bytes()),
         commitment: hex::encode(deposit_note.commitment.as_bytes()),
-        asset_id: deposit_note.asset_id.into(),
+        asset_id: JsAlkaneId::from(alkanes_support::id::AlkaneId::from(deposit_note.asset_id)),
         denomination: deposit_note.denomination.to_string(),
         leaf_index: deposit_note.leaf_index,
     })
@@ -254,7 +310,7 @@ pub fn verify_deposit_note_validity(note: &JsDepositNote) -> Result<bool, JsValu
         secret,
         nullifier,
         commitment,
-        asset_id,
+        asset_id.into(),
         denomination,
         note.leaf_index,
     );

@@ -1,5 +1,5 @@
 [package]
-name = "zkane"
+name = "zkane-pool"
 version = "0.1.0"
 edition = "2021"
 description = "ZKane privacy pool alkane contract"

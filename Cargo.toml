@@ -9,36 +9,46 @@ repository = "https://github.com/zkane-project/zkane"
 [workspace]
 members = [
     "crates/zkane-common",
-    "crates/zkane-crypto", 
+    "crates/zkane-crypto",
     "crates/zkane-core",
     "crates/zkane-wasm",
-    "alkanes/zkane",
-    "alkanes/zkane-factory",
 ]
 
-[dependencies]
-# Core ZKane crates
-zkane-common = { path = "crates/zkane-common" }
-zkane-crypto = { path = "crates/zkane-crypto" }
-zkane-core = { path = "crates/zkane-core" }
-zkane-wasm = { path = "crates/zkane-wasm", optional = true }
-
+[workspace.dependencies]
 # Alkanes framework
-alkanes = { git = "https://github.com/sandshrewmetaprotocols/alkanes", branch = "main" }
-alkanes-support = { git = "https://github.com/sandshrewmetaprotocols/alkanes", branch = "main" }
+alkanes = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main", features = ["test-utils"] }
+alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
+alkanes-runtime = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
+alkanes-macros = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
 
 # Protorune dependencies
-protorune = { git = "https://github.com/sandshrewmetaprotocols/protorune", branch = "main" }
-protorune-support = { git = "https://github.com/sandshrewmetaprotocols/protorune", branch = "main" }
+protorune = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main", features = ["test-utils"] }
+protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
 
 # Metashrew dependencies
-metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "main" }
-metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "main" }
+metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew" }
+metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew" }
 
 # Bitcoin and cryptography
 bitcoin = "0.32"
 sha2 = "0.10"
+blake2 = "0.10"
 hex = "0.4"
+rand = "0.8"
+
+# Arkworks cryptography
+ark-ff = "0.4"
+ark-ec = "0.4"
+ark-std = "0.4"
+ark-bn254 = "0.4"
+ark-serialize = "0.4"
+
+# WASM and web dependencies
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = "0.3"
+getrandom = { version = "0.2", features = ["js"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -49,17 +59,75 @@ anyhow = "1.0"
 thiserror = "1.0"
 
 # Async and utilities
-tokio = { version = "1.0", features = ["full"], optional = true }
+tokio = { version = "1.0", features = ["full"] }
+once_cell = "1.0"
+
+# Testing dependencies
+wasm-bindgen-test = "0.3"
+hex_lit = "0.1"
+
+
+# Ordinals
+ordinals = { git = "https://github.com/kungfuflex/alkanes-rs" }
+
+# Protobuf
+protobuf = "3.0"
+
+# Math utilities
+ruint = "1.0"
+
+[dependencies]
+# Core ZKane crates
+zkane-common = { path = "crates/zkane-common" }
+zkane-crypto = { path = "crates/zkane-crypto" }
+zkane-core = { path = "crates/zkane-core" }
+zkane-wasm = { path = "crates/zkane-wasm", optional = true }
+
+# Alkanes framework
+alkanes = { workspace = true, features = ["test-utils"] }
+alkanes-support = { workspace = true }
+
+# Protorune dependencies
+protorune = { workspace = true, features = ["test-utils"] }
+protorune-support = { workspace = true }
+
+# Metashrew dependencies
+metashrew-core = { workspace = true }
+metashrew-support = { workspace = true }
+
+# Bitcoin and cryptography
+bitcoin = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+getrandom = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error handling
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+
+# Async and utilities
+tokio = { workspace = true, optional = true }
+
+# Ordinals
+ordinals = { workspace = true }
+
+# Protobuf
+protobuf = { workspace = true }
 
 # Testing dependencies
 [dev-dependencies]
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test = { workspace = true }
 
 [features]
 default = ["std"]
 std = []
 wasm = ["zkane-wasm"]
 async = ["tokio"]
+alkanes = ["alkanes/test-utils"]
 
 # WASM-specific configuration
 [lib]

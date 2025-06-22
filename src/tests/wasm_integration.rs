@@ -3,7 +3,8 @@
 //! Tests for the WASM bindings and browser compatibility.
 
 use wasm_bindgen_test::*;
-use zkane_common::{Secret, Nullifier, Commitment, AlkaneId};
+use zkane_common::{Secret, Nullifier, Commitment};
+use alkanes_support::id::AlkaneId;
 use crate::tests::helpers::*;
 
 // Configure for browser testing
@@ -37,7 +38,7 @@ fn test_wasm_crypto_functions() {
 
 #[wasm_bindgen_test]
 fn test_wasm_deposit_note_creation() {
-    let asset_id = zkane_wasm::JsAlkaneId::new(2, 1);
+    let asset_id = AlkaneId { block: 2, tx: 1 };
     let denomination = "1000000";
     
     // Create deposit note
@@ -130,7 +131,7 @@ fn test_wasm_witness_envelope_generation() {
 
 #[wasm_bindgen_test]
 fn test_wasm_pool_id_generation() {
-    let asset_id = zkane_wasm::JsAlkaneId::new(2, 1);
+    let asset_id = AlkaneId { block: 2, tx: 1 };
     let denomination = "1000000";
     
     let pool_id = zkane_wasm::generate_pool_id(&asset_id, denomination).unwrap();
@@ -141,7 +142,7 @@ fn test_wasm_pool_id_generation() {
     assert_eq!(pool_id.tx(), pool_id2.tx());
     
     // Different inputs should produce different pool IDs
-    let different_asset = zkane_wasm::JsAlkaneId::new(3, 1);
+    let different_asset = AlkaneId { block: 3, tx: 1 };
     let different_pool_id = zkane_wasm::generate_pool_id(&different_asset, denomination).unwrap();
     assert!(pool_id.tx() != different_pool_id.tx());
     
@@ -233,7 +234,7 @@ fn test_wasm_end_to_end_flow() {
     zkane_wasm::log("🚀 Starting WASM end-to-end flow test");
     
     // Step 1: Create deposit note
-    let asset_id = zkane_wasm::JsAlkaneId::new(2, 1);
+    let asset_id = AlkaneId { block: 2, tx: 1 };
     let denomination = "1000000";
     let deposit_note = zkane_wasm::create_deposit_note(&asset_id, denomination).unwrap();
     

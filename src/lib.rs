@@ -61,6 +61,7 @@ pub use zkane_core::*;
 
 // Re-export WASM bindings when feature is enabled
 #[cfg(feature = "wasm")]
+#[cfg(feature = "wasm")]
 pub use zkane_wasm;
 
 // Error types
@@ -231,7 +232,7 @@ pub mod prelude {
 pub mod tests;
 
 // Integration with alkanes framework
-#[cfg(feature = "alkanes")]
+#[cfg(test)]
 pub mod alkanes_integration {
     //! Integration utilities for alkanes framework
     

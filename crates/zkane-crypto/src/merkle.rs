@@ -1,6 +1,5 @@
 //! Merkle tree implementation for ZKane privacy pools
 
-use anyhow::Result;
 use zkane_common::{Commitment, MerklePath, ZKaneError, ZKaneResult};
 use crate::hash::{hash_leaf, hash_internal};
 use std::collections::HashMap;
@@ -145,7 +144,7 @@ impl MerkleTree {
             current_index /= 2;
         }
         
-        MerklePath::new(elements, indices)
+        MerklePath::new(elements, indices).map_err(|e| ZKaneError::CryptoError(e.to_string()))
     }
 
     /// Verify a merkle path for the given commitment and leaf index
@@ -163,7 +162,7 @@ impl MerkleTree {
         let mut current_hash = hash_leaf(commitment.as_bytes());
         let mut current_index = leaf_index;
         
-        for (level, (&sibling_hash, &is_right_child)) in 
+        for (_level, (&sibling_hash, &is_right_child)) in
             path.elements.iter().zip(path.indices.iter()).enumerate() {
             
             // Verify the index matches the path

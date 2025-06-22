@@ -98,7 +98,7 @@ fn test_zkane_complete_system() -> Result<()> {
                                         asset_id.block, asset_id.tx, // Asset ID
                                         *denom, // Denomination
                                     ]).encipher(),
-                                    protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                    protocol_tag: 0u128, // Use default protocol tag
                                     pointer: Some(0),
                                     refund: Some(0),
                                     from: None,
@@ -188,7 +188,7 @@ fn test_zkane_complete_system() -> Result<()> {
                                         message: into_cellpack(vec![
                                             pool_id.block, pool_id.tx, 0u128, // Deposit opcode
                                         ]).encipher(),
-                                        protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                        protocol_tag: 0u128, // Use default protocol tag
                                         pointer: Some(0),
                                         refund: Some(0),
                                         from: None,
@@ -303,9 +303,9 @@ fn test_zkane_complete_system() -> Result<()> {
         (2, "Charlie", "Recipient_C"),
     ];
     
-    for (pool_idx, depositor, recipient) in withdrawal_scenarios {
-        if pool_idx < all_pools.len() {
-            let (_, _, pool_id) = all_pools[pool_idx];
+    for (pool_idx, depositor, recipient) in &withdrawal_scenarios {
+        if pool_idx < &all_pools.len() {
+            let (_, _, pool_id) = all_pools[*pool_idx];
             
             // Find the depositor's note in this pool
             if let Some((_, _, deposit_note)) = all_deposits.iter().find(|(user, pid, _)| user == depositor && *pid == pool_id) {
@@ -371,7 +371,7 @@ fn test_zkane_complete_system() -> Result<()> {
                                             message: into_cellpack(vec![
                                                 pool_id.block, pool_id.tx, 1u128, // Withdrawal opcode
                                             ]).encipher(),
-                                            protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                            protocol_tag: 0u128, // Use default protocol tag
                                             pointer: Some(0),
                                             refund: Some(0),
                                             from: None,
@@ -386,7 +386,7 @@ fn test_zkane_complete_system() -> Result<()> {
                     ],
                 }]);
                 
-                alkanes::indexer::index_block(&withdrawal_block, 300 + pool_idx as u32)?;
+                alkanes::indexer::index_block(&withdrawal_block, 300 + *pool_idx as u32)?;
                 
                 // Verify nullifier is now spent
                 let spent_response = call_zkane_contract(
@@ -394,7 +394,7 @@ fn test_zkane_complete_system() -> Result<()> {
                     3, 
                     vec![], 
                     Some(nullifier_hash.as_bytes().to_vec()), 
-                    310 + pool_idx as u32, 
+                    310 + *pool_idx as u32,
                     "VerifyWithdrawal"
                 )?;
                 match parse_bool_response(&spent_response, "IsNullifierSpent") {
@@ -536,7 +536,7 @@ fn test_zkane_edge_cases() -> Result<()> {
                                     AlkaneId { block: 99, tx: 99 }.block, AlkaneId { block: 99, tx: 99 }.tx, // New asset
                                     5000000u128, // New denomination
                                 ]).encipher(),
-                                protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                protocol_tag: 0u128, // Use default protocol tag
                                 pointer: Some(0),
                                 refund: Some(0),
                                 from: None,
@@ -644,7 +644,7 @@ fn test_zkane_edge_cases() -> Result<()> {
                                     asset_id.block, asset_id.tx, // Same asset as original
                                     1000000u128, // Same denomination as original
                                 ]).encipher(),
-                                protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                protocol_tag: 0u128, // Use default protocol tag
                                 pointer: Some(0),
                                 refund: Some(0),
                                 from: None,

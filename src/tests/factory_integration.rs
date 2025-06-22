@@ -134,7 +134,7 @@ mod tests {
             secret,
             nullifier,
             commitment,
-            asset_id.clone(),
+            asset_id.into(),
             denomination,
             0, // Will be set by contract
         );

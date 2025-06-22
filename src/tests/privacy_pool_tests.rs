@@ -89,7 +89,7 @@ fn test_zkane_deposit_flow() -> Result<()> {
                                 message: into_cellpack(vec![
                                     pool_id.block, pool_id.tx, 0u128, // Deposit opcode
                                 ]).encipher(),
-                                protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                protocol_tag: 0u128, // Use default protocol tag
                                 pointer: Some(0),
                                 refund: Some(0),
                                 from: None,
@@ -271,7 +271,7 @@ fn test_zkane_withdrawal_flow() -> Result<()> {
                         message: into_cellpack(vec![
                             pool_id.block, pool_id.tx, 1u128, // Withdrawal opcode
                         ]).encipher(),
-                        protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                        protocol_tag: 0u128, // Use default protocol tag
                         pointer: Some(0),
                         refund: Some(0),
                         from: None,
@@ -415,7 +415,7 @@ fn test_zkane_security_features() -> Result<()> {
                                 message: into_cellpack(vec![
                                     pool_id.block, pool_id.tx, 1u128, // Withdrawal opcode
                                 ]).encipher(),
-                                protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                protocol_tag: 0u128, // Use default protocol tag
                                 pointer: Some(0),
                                 refund: Some(0),
                                 from: None,
@@ -483,7 +483,7 @@ fn test_zkane_security_features() -> Result<()> {
                                 message: into_cellpack(vec![
                                     pool_id.block, pool_id.tx, 1u128, // Withdrawal opcode
                                 ]).encipher(),
-                                protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                protocol_tag: 0u128, // Use default protocol tag
                                 pointer: Some(0),
                                 refund: Some(0),
                                 from: None,
@@ -551,7 +551,7 @@ fn test_zkane_security_features() -> Result<()> {
                                 message: into_cellpack(vec![
                                     pool_id.block, pool_id.tx, 1u128, // Withdrawal opcode
                                 ]).encipher(),
-                                protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                protocol_tag: 0u128, // Use default protocol tag
                                 pointer: Some(0),
                                 refund: Some(0),
                                 from: None,
@@ -642,7 +642,7 @@ fn test_zkane_factory_pattern() -> Result<()> {
                                         asset_id.block, asset_id.tx, // Asset ID
                                         *denomination, // Denomination
                                     ]).encipher(),
-                                    protocol_tag: AlkaneMessageContext::protocol_tag() as u128,
+                                    protocol_tag: 0u128, // Use default protocol tag
                                     pointer: Some(0),
                                     refund: Some(0),
                                     from: None,
@@ -771,4 +771,7 @@ fn test_zkane_factory_pattern() -> Result<()> {
     println!("✅ Pool creation working correctly");
     println!("✅ Pool registry maintaining accurate state");
     println!("✅ Deterministic pool ID generation working");
-    println
+    println!("✅ Factory pattern fully functional");
+    
+    Ok(())
+}

@@ -26,18 +26,20 @@ web-sys = { workspace = true, features = [
   "RequestInit",
   "RequestMode",
   "Headers",
+  "Crypto",
+  "CryptoKey",
+  "SubtleCrypto",
 ] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 serde-wasm-bindgen = "0.6"
 anyhow = { workspace = true }
 hex = { workspace = true }
+sha2 = { workspace = true }
 rand = { workspace = true, features = ["getrandom"] }
 getrandom = { version = "0.2", features = ["js"] }
 alkanes-support = { workspace = true }
 
-# Noir integration for proof generation
-noir-rs = { workspace = true, optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }
@@ -45,26 +47,7 @@ wasm-bindgen-test = { workspace = true }
 [features]
 default = ["console_error_panic_hook"]
 console_error_panic_hook = ["dep:console_error_panic_hook"]
-noir-prover = ["noir-rs"]
 
 [dependencies.console_error_panic_hook]
 version = "0.1"
 optional = true
-
-[dependencies.web-sys]
-version = "0.3"
-features = [
-  "console",
-  "Window",
-  "Document",
-  "Element",
-  "HtmlElement",
-  "Response",
-  "Request",
-  "RequestInit",
-  "RequestMode",
-  "Headers",
-  "Crypto",
-  "CryptoKey",
-  "SubtleCrypto",
-]

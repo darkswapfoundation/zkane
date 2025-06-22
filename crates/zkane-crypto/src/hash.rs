@@ -1,6 +1,5 @@
 //! Hash function implementations for ZKane
 
-use anyhow::Result;
 use sha2::{Digest, Sha256};
 use blake2::{Blake2b512, Blake2s256};
 

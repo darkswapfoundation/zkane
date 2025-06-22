@@ -63,6 +63,34 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use alkanes_support::id::AlkaneId;
 
+/// A serializable wrapper for AlkaneId.
+///
+/// Since AlkaneId from alkanes_support doesn't implement Serialize/Deserialize,
+/// we create a wrapper that can be serialized for storage and transmission.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct SerializableAlkaneId {
+    pub block: u128,
+    pub tx: u128,
+}
+
+impl From<AlkaneId> for SerializableAlkaneId {
+    fn from(id: AlkaneId) -> Self {
+        Self {
+            block: id.block,
+            tx: id.tx,
+        }
+    }
+}
+
+impl From<SerializableAlkaneId> for AlkaneId {
+    fn from(id: SerializableAlkaneId) -> Self {
+        Self {
+            block: id.block,
+            tx: id.tx,
+        }
+    }
+}
+
 /// A commitment to a secret value in the privacy pool.
 ///
 /// Commitments are cryptographic bindings of secrets and nullifiers that hide
@@ -436,7 +464,7 @@ impl Nullifier {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ZKaneConfig {
     /// The alkane asset ID this pool accepts
-    pub asset_id: AlkaneId,
+    pub asset_id: SerializableAlkaneId,
     /// The denomination (fixed amount) for deposits/withdrawals
     pub denomination: u128,
     /// The merkle tree height (determines max number of deposits)
@@ -455,7 +483,7 @@ impl ZKaneConfig {
     /// * `tree_height` - Merkle tree height (max deposits = 2^height)
     /// * `verifier_key` - Cryptographic key for proof verification
     pub fn new(
-        asset_id: AlkaneId,
+        asset_id: SerializableAlkaneId,
         denomination: u128,
         tree_height: u32,
         verifier_key: Vec<u8>,
@@ -521,7 +549,7 @@ pub struct DepositNote {
     /// The commitment (public, stored in pool)
     pub commitment: Commitment,
     /// The asset ID for this deposit
-    pub asset_id: AlkaneId,
+    pub asset_id: SerializableAlkaneId,
     /// The denomination of this deposit
     pub denomination: u128,
     /// The leaf index in the merkle tree (set during deposit)
@@ -543,7 +571,7 @@ impl DepositNote {
         secret: Secret,
         nullifier: Nullifier,
         commitment: Commitment,
-        asset_id: AlkaneId,
+        asset_id: SerializableAlkaneId,
         denomination: u128,
         leaf_index: u32,
     ) -> Self {
@@ -569,7 +597,7 @@ impl DepositNote {
     ///
     /// * `asset_id` - The asset for this deposit
     /// * `denomination` - The amount for this deposit
-    pub fn random(asset_id: AlkaneId, denomination: u128) -> Self {
+    pub fn random(asset_id: SerializableAlkaneId, denomination: u128) -> Self {
         let secret = Secret::random();
         let nullifier = Nullifier::random();
         // Note: commitment should be calculated using proper hash function
@@ -798,7 +826,7 @@ mod tests {
     #[test]
     fn test_zkane_config_max_deposits() {
         let config = ZKaneConfig::new(
-            AlkaneId { block: 1, tx: 1 },
+            SerializableAlkaneId { block: 1, tx: 1 },
             1000,
             10,
             vec![],
@@ -811,7 +839,7 @@ mod tests {
         let secret = Secret::random();
         let nullifier = Nullifier::random();
         let commitment = Commitment::new([42u8; 32]);
-        let asset_id = AlkaneId { block: 2, tx: 1 };
+        let asset_id = SerializableAlkaneId { block: 2, tx: 1 };
 
         let note = DepositNote::new(
             secret,
