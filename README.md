@@ -341,32 +341,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Tornado Cash](https://tornado.cash/) for privacy pool inspiration
 - Bitcoin community for the underlying infrastructure
 
-## 🔮 Roadmap
-
-### Phase 1: Core Implementation ✅
-- [x] Basic privacy pool functionality
-- [x] Factory pattern implementation
-- [x] WASM bindings for browser integration
-- [x] Comprehensive test suite
-
-### Phase 2: Advanced Features 🚧
-- [ ] Optimized Noir circuits with trusted setup
-- [ ] Advanced Merkle tree implementations
-- [ ] Multi-denomination pool support
-- [ ] Relayer network for enhanced privacy
-
-### Phase 3: Production Deployment 📋
-- [ ] Security audit
-- [ ] Mainnet deployment
-- [ ] Frontend dapp development
-- [ ] Documentation and tutorials
-
-### Phase 4: Ecosystem Integration 🌐
-- [ ] Cross-chain bridge support
-- [ ] DeFi protocol integrations
-- [ ] Mobile wallet support
-- [ ] Institutional features
-
 ---
 
 **⚠️ Security Notice**: This is experimental software. Do not use with real funds without proper security audits.
