@@ -45,7 +45,7 @@
 //!
 //! // Create a deposit note (commitment would be calculated separately)
 //! let asset_id = AlkaneId { block: 2, tx: 1 };
-//! let deposit_note = DepositNote::random(asset_id, 1000000);
+//! let deposit_note = DepositNote::random(asset_id.into(), 1000000);
 //!
 //! // Access the underlying bytes for cryptographic operations
 //! let secret_bytes = secret.as_bytes();
@@ -455,7 +455,7 @@ impl Nullifier {
 /// use alkanes_support::id::AlkaneId;
 ///
 /// let config = ZKaneConfig::new(
-///     AlkaneId { block: 2, tx: 1 },  // Asset ID
+///     AlkaneId { block: 2, tx: 1 }.into(),  // Asset ID
 ///     1000000,                        // 1M unit denomination
 ///     20,                            // 20-level Merkle tree (1M max deposits)
 ///     vec![0u8; 32],                 // Verifier key (placeholder)
@@ -535,7 +535,7 @@ impl ZKaneConfig {
 ///     secret,
 ///     nullifier,
 ///     commitment,
-///     asset_id,
+///     asset_id.into(),
 ///     1000000,  // denomination
 ///     0,        // leaf index (set during deposit)
 /// );

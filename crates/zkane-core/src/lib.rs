@@ -32,10 +32,10 @@
 //!
 //! // Create a new privacy pool
 //! let config = ZKaneConfig::new(
-//!     AlkaneId { block: 2, tx: 1 },  // Asset ID
-//!     1000000,                        // Denomination
-//!     20,                            // Tree height
-//!     vec![],                        // Verifier key
+//!     AlkaneId { block: 2, tx: 1 }.into(),  // Asset ID
+//!     1000000,                              // Denomination
+//!     20,                                   // Tree height
+//!     vec![],                               // Verifier key
 //! );
 //! let mut pool = PrivacyPool::new(config)?;
 //!
@@ -52,7 +52,7 @@
 //! use alkanes_support::id::AlkaneId;
 //!
 //! // Generate a complete deposit note
-//! let asset_id = AlkaneId { block: 2, tx: 1 };
+//! let asset_id = AlkaneId { block: 2, tx: 1 }.into();
 //! let denomination = 1000000u128;
 //! let deposit_note = generate_deposit_note(asset_id, denomination)?;
 //!
@@ -102,7 +102,7 @@ use std::collections::HashSet;
 /// use alkanes_support::id::AlkaneId;
 ///
 /// let config = ZKaneConfig::new(
-///     AlkaneId { block: 2, tx: 1 },
+///     AlkaneId { block: 2, tx: 1 }.into(),
 ///     1000000,
 ///     20,
 ///     vec![],
@@ -142,7 +142,7 @@ impl PrivacyPool {
     /// use alkanes_support::id::AlkaneId;
     ///
     /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 },
+    ///     AlkaneId { block: 2, tx: 1 }.into(),
     ///     1000000,
     ///     20,
     ///     vec![],
@@ -182,7 +182,7 @@ impl PrivacyPool {
     /// use alkanes_support::id::AlkaneId;
     ///
     /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }, 1000000, 20, vec![]
+    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
     /// );
     /// let pool = PrivacyPool::new(config)?;
     /// let root = pool.merkle_root();
@@ -220,7 +220,7 @@ impl PrivacyPool {
     /// use alkanes_support::id::AlkaneId;
     ///
     /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }, 1000000, 20, vec![]
+    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
     /// );
     /// let pool = PrivacyPool::new(config)?;
     /// 
@@ -258,7 +258,7 @@ impl PrivacyPool {
     /// use alkanes_support::id::AlkaneId;
     ///
     /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }, 1000000, 20, vec![]
+    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
     /// );
     /// let mut pool = PrivacyPool::new(config)?;
     /// 
@@ -319,7 +319,7 @@ impl PrivacyPool {
     /// use alkanes_support::id::AlkaneId;
     ///
     /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }, 1000000, 20, vec![]
+    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
     /// );
     /// let mut pool = PrivacyPool::new(config)?;
     /// 
@@ -428,7 +428,7 @@ impl PrivacyPool {
 /// use zkane_core::generate_deposit_note;
 /// use alkanes_support::id::AlkaneId;
 ///
-/// let asset_id = AlkaneId { block: 2, tx: 1 };
+/// let asset_id = AlkaneId { block: 2, tx: 1 }.into();
 /// let denomination = 1000000u128;
 /// let deposit_note = generate_deposit_note(asset_id, denomination)?;
 ///
@@ -479,7 +479,7 @@ pub fn generate_deposit_note(asset_id: AlkaneId, denomination: u128) -> ZKaneRes
 /// use zkane_core::{generate_deposit_note, verify_deposit_note};
 /// use alkanes_support::id::AlkaneId;
 ///
-/// let asset_id = AlkaneId { block: 2, tx: 1 };
+/// let asset_id = AlkaneId { block: 2, tx: 1 }.into();
 /// let note = generate_deposit_note(asset_id, 1000000)?;
 ///
 /// // Valid note should verify

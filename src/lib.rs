@@ -45,6 +45,13 @@
 //!
 //! ```rust,no_run
 //! use zkane_crypto::generate_nullifier_hash;
+//! use zkane_core::generate_deposit_note;
+//! use alkanes_support::id::AlkaneId;
+//!
+//! // First generate a deposit note
+//! let asset_id = AlkaneId { block: 2, tx: 1 };
+//! let denomination = 1000000u128;
+//! let deposit_note = generate_deposit_note(asset_id, denomination)?;
 //!
 //! // Generate nullifier hash for withdrawal
 //! let nullifier_hash = generate_nullifier_hash(&deposit_note.nullifier)?;
@@ -230,6 +237,10 @@ pub mod prelude {
 // Test modules (only compiled in test configuration)
 #[cfg(test)]
 pub mod tests;
+
+// Trace demonstration module
+#[cfg(test)]
+pub mod trace_demo;
 
 // Integration with alkanes framework
 #[cfg(test)]

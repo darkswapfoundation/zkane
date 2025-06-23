@@ -41,8 +41,8 @@
 //! let nullifier_hash = generate_nullifier_hash(&nullifier)?;
 //!
 //! // Create and use Merkle tree
-//! let mut tree = MerkleTree::new(20)?; // 20-level tree
-//! let leaf_index = tree.insert(commitment.as_bytes())?;
+//! let mut tree = MerkleTree::new(20); // 20-level tree
+//! let leaf_index = tree.insert(&commitment)?;
 //! let merkle_root = tree.root();
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```

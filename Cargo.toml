@@ -12,22 +12,23 @@ members = [
     "crates/zkane-crypto",
     "crates/zkane-core",
     "crates/zkane-wasm",
+    "crates/zkane-frontend",  # Temporarily excluded due to metashrew-support compilation issues in v0.5.1
 ]
 
 [workspace.dependencies]
-# Alkanes framework
-alkanes = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main", features = ["test-utils"] }
-alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
-alkanes-runtime = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
-alkanes-macros = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
+# Alkanes framework - using v0.5.1 tag
+alkanes = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2", features = ["test-utils"] }
+alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+alkanes-runtime = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+alkanes-macros = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
 
-# Protorune dependencies
-protorune = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main", features = ["test-utils"] }
-protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "main" }
+# Protorune dependencies - using v0.5.1 tag
+protorune = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2", features = ["test-utils"] }
+protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
 
-# Metashrew dependencies
-metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew" }
-metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew" }
+# Metashrew dependencies - using v0.5.1 tag
+metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "kungfuflex/v9.0.0-rc6" }
+metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "kungfuflex/v9.0.0-rc6" }
 
 # Bitcoin and cryptography
 bitcoin = "0.32"
@@ -67,8 +68,8 @@ wasm-bindgen-test = "0.3"
 hex_lit = "0.1"
 
 
-# Ordinals
-ordinals = { git = "https://github.com/kungfuflex/alkanes-rs" }
+# Ordinals - using v0.5.1 tag
+ordinals = { git = "https://github.com/kungfuflex/alkanes-rs", tag = "v0.5.1" }
 
 # Protobuf
 protobuf = "3.0"
@@ -83,17 +84,8 @@ zkane-crypto = { path = "crates/zkane-crypto" }
 zkane-core = { path = "crates/zkane-core" }
 zkane-wasm = { path = "crates/zkane-wasm", optional = true }
 
-# Alkanes framework
-alkanes = { workspace = true, features = ["test-utils"] }
+# Only alkanes-support for ID types (not full alkanes framework)
 alkanes-support = { workspace = true }
-
-# Protorune dependencies
-protorune = { workspace = true, features = ["test-utils"] }
-protorune-support = { workspace = true }
-
-# Metashrew dependencies
-metashrew-core = { workspace = true }
-metashrew-support = { workspace = true }
 
 # Bitcoin and cryptography
 bitcoin = { workspace = true }
@@ -110,10 +102,7 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 
 # Async and utilities
-tokio = { workspace = true, optional = true }
-
-# Ordinals
-ordinals = { workspace = true }
+tokio = { workspace = true }
 
 # Protobuf
 protobuf = { workspace = true }
@@ -126,8 +115,6 @@ wasm-bindgen-test = { workspace = true }
 default = ["std"]
 std = []
 wasm = ["zkane-wasm"]
-async = ["tokio"]
-alkanes = ["alkanes/test-utils"]
 
 # WASM-specific configuration
 [lib]

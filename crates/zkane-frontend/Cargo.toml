@@ -1,0 +1,90 @@
+[package]
+name = "zkane-frontend"
+version = "0.1.0"
+edition = "2021"
+description = "ZKane Privacy Pool Frontend - Full-stack Rust web application"
+authors = ["ZKane Team"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# Leptos framework
+leptos = { version = "0.6", features = ["csr"] }
+leptos_meta = { version = "0.6", features = ["csr"] }
+leptos_router = { version = "0.6", features = ["csr"] }
+
+# WASM and browser APIs
+wasm-bindgen = { workspace = true, features = ["serde-serialize"] }
+wasm-bindgen-futures = { workspace = true }
+js-sys = { workspace = true }
+web-sys = { version = "0.3", features = [
+  "console", "Window", "Document", "Element", "HtmlElement",
+  "HtmlInputElement", "HtmlButtonElement", "HtmlSelectElement",
+  "Event", "EventTarget", "MouseEvent", "InputEvent",
+  "Response", "Request", "RequestInit", "Headers",
+  "Crypto", "SubtleCrypto", "CryptoKey", "Blob", "BlobPropertyBag",
+  "Url", "HtmlAnchorElement", "Storage", "Location"
+] }
+
+# Serialization
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+serde-wasm-bindgen = "0.6"
+
+# Error handling and utilities
+anyhow = { workspace = true }
+thiserror = "1.0"
+hex = { workspace = true }
+uuid = { version = "1.0", features = ["v4", "js"] }
+sha2 = { workspace = true }
+
+# ZKane dependencies - only WASM-compatible ones
+zkane-wasm = { path = "../zkane-wasm" }
+
+# Note: zkane-common, zkane-crypto, zkane-core removed temporarily to avoid alkanes/metashrew-support compilation issues
+# These will be re-enabled once the metashrew-support type annotation issues are resolved upstream
+# zkane-common = { path = "../zkane-common" }
+# zkane-crypto = { path = "../zkane-crypto" }
+# zkane-core = { path = "../zkane-core" }
+
+# Alkanes dependencies removed - using local types instead to avoid metashrew-support compilation issues
+# alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+# protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+# ordinals = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+
+# Logging and debugging
+log = "0.4"
+console_log = "1.0"
+console_error_panic_hook = { version = "0.1", optional = true }
+
+# Random number generation for browser
+rand = { workspace = true, features = ["getrandom"] }
+getrandom = { version = "0.2", features = ["js"] }
+
+# Time utilities
+gloo-timers = { version = "0.3.0", features = ["futures"] }
+gloo-file = "0.3.0"
+
+# Development and testing dependencies
+[dev-dependencies]
+tokio = { version = "1.0", features = ["macros", "rt", "time"], default-features = false }
+wasm-bindgen-test = { workspace = true }
+pretty_assertions = "1.4"
+
+[features]
+default = ["console_error_panic_hook"]
+hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
+
+[profile.release]
+opt-level = 'z'
+codegen-units = 1
+lto = true
+
+[profile.test]
+opt-level = 1
+debug = true
+
+# WASM-specific test configuration
+[package.metadata.wasm-pack.profile.test]
+wasm-opt = false

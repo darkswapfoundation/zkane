@@ -9,9 +9,10 @@ authors = ["ZKane Team"]
 crate-type = ["cdylib"]
 
 [dependencies]
-zkane-common = { path = "../zkane-common" }
-zkane-crypto = { path = "../zkane-crypto" }
-zkane-core = { path = "../zkane-core" }
+# Temporarily removed to avoid metashrew-support compilation issues
+# zkane-common = { path = "../zkane-common" }
+# zkane-crypto = { path = "../zkane-crypto" }
+# zkane-core = { path = "../zkane-core" }
 wasm-bindgen = { workspace = true, features = ["serde-serialize"] }
 wasm-bindgen-futures = { workspace = true }
 js-sys = { workspace = true }
@@ -38,7 +39,7 @@ hex = { workspace = true }
 sha2 = { workspace = true }
 rand = { workspace = true, features = ["getrandom"] }
 getrandom = { version = "0.2", features = ["js"] }
-alkanes-support = { workspace = true }
+# alkanes-support = { workspace = true }  # Temporarily removed to avoid metashrew-support compilation issues
 
 
 [dev-dependencies]

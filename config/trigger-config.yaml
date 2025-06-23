@@ -1,0 +1,9 @@
+name: aurora-mist-cathedral-main
+description: "ZKane main branch deployment trigger"
+github:
+  owner: darkswapfoundation
+  name: zkane
+  push:
+    branch: ^main$
+filename: cloudbuild.yaml
+serviceAccount: projects/oyl-project-123456/serviceAccounts/mystic-forge-cascade@oyl-project-123456.iam.gserviceaccount.com
