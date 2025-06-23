@@ -6,4 +6,4 @@ github:
   push:
     branch: ^main$
 filename: cloudbuild.yaml
-serviceAccount: projects/oyl-project-123456/serviceAccounts/mystic-forge-cascade@oyl-project-123456.iam.gserviceaccount.com
+serviceAccount: projects/crystal-moon-sanctuary-789456/serviceAccounts/mystic-forge-cascade@crystal-moon-sanctuary-789456.iam.gserviceaccount.com

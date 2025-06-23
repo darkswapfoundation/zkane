@@ -35,7 +35,15 @@ pub fn main() {
 // Export for testing
 #[wasm_bindgen]
 pub fn init_app() {
+    #[cfg(not(test))]
     main();
+    
+    #[cfg(test)]
+    {
+        console_error_panic_hook::set_once();
+        _ = console_log::init_with_level(log::Level::Debug);
+        log::info!("🚀 ZKane Privacy Pool application initialized for testing...");
+    }
 }
 
 // Version information

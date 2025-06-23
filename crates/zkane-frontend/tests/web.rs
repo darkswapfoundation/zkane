@@ -1,9 +1,9 @@
 #![allow(dead_code)]
 
+use zkane_frontend::*;
+use leptos::prelude::*;
+use wasm_bindgen::JsCast;
 use wasm_bindgen_test::*;
-
-// Import the basic functions we can test
-use zkane_frontend::{health_check, get_app_version};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
@@ -56,4 +56,50 @@ fn test_json_serialization() {
     let deserialized: serde_json::Value = serde_json::from_str(&serialized).unwrap();
     assert_eq!(deserialized["test"], "value");
     assert_eq!(deserialized["number"], 42);
+}
+
+#[wasm_bindgen_test]
+fn test_types_creation() {
+    // Test that we can create our basic types
+    let alkane_id = AlkaneId::new(123, 456);
+    assert_eq!(alkane_id.block, 123);
+    assert_eq!(alkane_id.tx, 456);
+    
+    // Test Display trait
+    let display_str = format!("{}", alkane_id);
+    assert_eq!(display_str, "123:456");
+}
+
+#[wasm_bindgen_test]
+fn test_services_creation() {
+    // Test that we can create our services
+    let zkane_service = ZKaneService::new();
+    let alkanes_service = AlkanesService::new();
+    let notification_service = NotificationService::new();
+    let storage_service = StorageService::new();
+    
+    // If we get here, the services were created successfully
+    assert!(true);
+}
+
+#[wasm_bindgen_test]
+fn test_notification_service() {
+    let notification_service = NotificationService::new();
+    
+    // Test creating different types of notifications
+    notification_service.success("Test Success", "This is a success message");
+    notification_service.error("Test Error", "This is an error message");
+    notification_service.warning("Test Warning", "This is a warning message");
+    notification_service.info("Test Info", "This is an info message");
+    
+    // Check that notifications were created
+    let notifications = notification_service.notifications.get();
+    assert_eq!(notifications.len(), 4);
+    
+    // Test dismissing a notification
+    if let Some(first_notification) = notifications.first() {
+        notification_service.dismiss(&first_notification.id);
+        let updated_notifications = notification_service.notifications.get();
+        assert_eq!(updated_notifications.len(), 3);
+    }
 }

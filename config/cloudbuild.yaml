@@ -187,8 +187,8 @@ steps:
         SERVICE_HOSTNAME=$(cat /workspace/service_hostname.txt)
         
         # Get Cloudflare credentials from Secret Manager
-        CLOUDFLARE_API_KEY=$(gcloud secrets versions access latest --secret="cloudflare-api-key")
-        CLOUDFLARE_EMAIL=$(gcloud secrets versions access latest --secret="cloudflare-email")
+        CLOUDFLARE_API_KEY=$(gcloud secrets versions access latest --secret="moonstone-whisper-key")
+        CLOUDFLARE_EMAIL=$(gcloud secrets versions access latest --secret="moonstone-whisper-key-email")
         
         # Get Cloudflare Zone ID
         ZONE_RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=zkane.app" \
