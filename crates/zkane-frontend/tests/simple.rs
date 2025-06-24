@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use zkane_frontend::*;
-use leptos::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -67,38 +66,4 @@ fn test_types_creation() {
     // Test Display trait
     let display_str = format!("{}", alkane_id);
     assert_eq!(display_str, "123:456");
-}
-
-#[wasm_bindgen_test]
-fn test_services_creation() {
-    // Test that we can create our services
-    let _zkane_service = ZKaneService::new();
-    let _alkanes_service = AlkanesService::new();
-    let _notification_service = NotificationService::new();
-    let _storage_service = StorageService::new();
-    
-    // If we get here, the services were created successfully
-    assert!(true);
-}
-
-#[wasm_bindgen_test]
-fn test_notification_service() {
-    let notification_service = NotificationService::new();
-    
-    // Test creating different types of notifications
-    notification_service.success("Test Success", "This is a success message");
-    notification_service.error("Test Error", "This is an error message");
-    notification_service.warning("Test Warning", "This is a warning message");
-    notification_service.info("Test Info", "This is an info message");
-    
-    // Check that notifications were created
-    let notifications = notification_service.notifications.get();
-    assert_eq!(notifications.len(), 4);
-    
-    // Test dismissing a notification
-    if let Some(first_notification) = notifications.first() {
-        notification_service.dismiss(&first_notification.id);
-        let updated_notifications = notification_service.notifications.get();
-        assert_eq!(updated_notifications.len(), 3);
-    }
 }

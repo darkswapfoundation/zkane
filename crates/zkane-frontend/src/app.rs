@@ -37,6 +37,7 @@ pub fn App() -> impl IntoView {
     provide_context(alkanes_service);
     provide_context(app_config);
     provide_context(user_preferences);
+    provide_context(set_user_preferences);
 
     view! {
         <Html lang="en" dir="ltr" attr:data-theme=move || {
@@ -81,8 +82,6 @@ pub fn App() -> impl IntoView {
 
 #[component]
 fn Header() -> impl IntoView {
-    let user_preferences = expect_context::<ReadSignal<UserPreferences>>();
-    
     view! {
         <header class="header">
             <div class="header-content">

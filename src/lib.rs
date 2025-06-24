@@ -65,11 +65,10 @@
 pub use zkane_common::*;
 pub use zkane_crypto::*;
 pub use zkane_core::*;
+use anyhow::{Result};
 
 // Re-export WASM bindings when feature is enabled
 #[cfg(feature = "wasm")]
-#[cfg(feature = "wasm")]
-pub use zkane_wasm;
 
 // Error types
 pub use anyhow::{Error, Result};

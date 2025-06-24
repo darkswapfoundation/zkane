@@ -77,36 +77,54 @@ crates/zkane-frontend/
 ### Prerequisites
 
 1. **Rust**: Install from [rustup.rs](https://rustup.rs/)
-2. **wasm-pack**: Install with `curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh`
-3. **HTTP Server**: Install with `cargo install basic-http-server`
+2. **Trunk**: Install with `cargo install trunk` (for development with hot reloading)
+3. **cargo-watch**: Install with `cargo install cargo-watch` (optional, for enhanced file watching)
 
-### Development Setup
+### Development Setup (Recommended - Hot Reloading)
 
 1. **Clone the repository**:
    ```bash
    git clone <repository-url>
-   cd zkane/crates/zkane-frontend
+   cd zkane
    ```
 
-2. **Build the application**:
+2. **Start development server**:
    ```bash
-   # Using the build script (recommended)
-   ../../scripts/build-frontend.sh debug
+   # Quick start with hot reloading
+   ./scripts/dev.sh
    
-   # Or manually
+   # Or specify a custom port
+   ./scripts/dev.sh 3000
+   ```
+
+3. **Open in browser**: Navigate to `http://localhost:9080` (or your custom port)
+
+The development server will automatically:
+- Build the WASM package
+- Watch for file changes in `src/`, `index.html`, and `styles.css`
+- Hot reload the browser when changes are detected
+- Provide detailed error messages in the console
+
+### Alternative Setup (Manual Build)
+
+1. **Build the application**:
+   ```bash
+   # Using the build script
+   ./scripts/build-frontend.sh debug
+   
+   # Or manually with wasm-pack
+   cd crates/zkane-frontend
    wasm-pack build --target web --dev
    ```
 
-3. **Serve the application**:
+2. **Serve the application**:
    ```bash
    # The build script can serve automatically
-   ../../scripts/build-frontend.sh debug
+   ./scripts/build-frontend.sh debug
    
    # Or manually
-   cd dist && basic-http-server
+   cd crates/zkane-frontend/dist && basic-http-server
    ```
-
-4. **Open in browser**: Navigate to `http://localhost:8080`
 
 ### Production Build
 

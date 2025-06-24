@@ -11,8 +11,7 @@ members = [
     "crates/zkane-common",
     "crates/zkane-crypto",
     "crates/zkane-core",
-    "crates/zkane-wasm",
-    "crates/zkane-frontend",  # Temporarily excluded due to metashrew-support compilation issues in v0.5.1
+    "crates/zkane-frontend",
 ]
 
 [workspace.dependencies]
@@ -45,7 +44,7 @@ ark-bn254 = "0.4"
 ark-serialize = "0.4"
 
 # WASM and web dependencies
-wasm-bindgen = "0.2"
+wasm-bindgen = "0.2.99"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 web-sys = "0.3"
@@ -60,11 +59,11 @@ anyhow = "1.0"
 thiserror = "1.0"
 
 # Async and utilities
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = ["macros", "rt", "time"] }
 once_cell = "1.0"
 
 # Testing dependencies
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test = "0.3.42"
 hex_lit = "0.1"
 
 
@@ -82,7 +81,6 @@ ruint = "1.0"
 zkane-common = { path = "crates/zkane-common" }
 zkane-crypto = { path = "crates/zkane-crypto" }
 zkane-core = { path = "crates/zkane-core" }
-zkane-wasm = { path = "crates/zkane-wasm", optional = true }
 
 # Only alkanes-support for ID types (not full alkanes framework)
 alkanes-support = { workspace = true }
@@ -96,9 +94,7 @@ getrandom = { workspace = true }
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
-
-# Error handling
-anyhow = { workspace = true }
+anyhow.workspace = true
 thiserror = { workspace = true }
 
 # Async and utilities
@@ -114,7 +110,6 @@ wasm-bindgen-test = { workspace = true }
 [features]
 default = ["std"]
 std = []
-wasm = ["zkane-wasm"]
 
 # WASM-specific configuration
 [lib]

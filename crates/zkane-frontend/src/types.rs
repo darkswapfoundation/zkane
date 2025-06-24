@@ -1,10 +1,8 @@
 //! Type definitions for ZKane Frontend application
 
 use serde::{Deserialize, Serialize};
-// Temporarily removed zkane_wasm import to avoid compilation issues
-// use zkane_wasm::JsDepositNote;
 
-// Local AlkaneId definition to avoid metashrew-support compilation issues
+// Local AlkaneId definition for frontend compatibility
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AlkaneId {
     pub block: u128,
@@ -23,7 +21,7 @@ impl AlkaneId {
     }
 }
 
-// Placeholder for JsDepositNote until zkane_wasm is working
+// JsDepositNote for frontend compatibility
 #[derive(Clone, Debug)]
 pub struct JsDepositNote {
     secret: String,

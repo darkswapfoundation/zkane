@@ -1,79 +1,12 @@
-//! # ZKane WASM Bindings for Browser DApp Integration
+//! WASM bindings for ZKane functionality integrated directly into the frontend
 //!
-//! This crate provides WebAssembly (WASM) bindings for ZKane functionality needed
-//! to build a browser-based privacy pool decentralized application (dapp). It exposes
-//! a JavaScript-compatible API that enables privacy-preserving transactions directly
-//! in web browsers.
-//!
-//! ## Overview
-//!
-//! The ZKane WASM bindings provide a complete interface for:
-//!
-//! - **Cryptographic Operations**: Secret/nullifier generation, commitment creation
-//! - **Deposit Management**: Creating and validating deposit notes
-//! - **Withdrawal Processing**: Proof generation and verification
-//! - **Pool Management**: Pool ID generation and registry operations
-//! - **Transaction Validation**: Output hash calculation for recipient validation
-//! - **Witness Envelope Support**: Large data storage for Bitcoin transactions
-//!
-//! ## Browser Compatibility
-//!
-//! This crate is designed to work in modern web browsers with WebAssembly support:
-//!
-//! - Chrome 57+, Firefox 52+, Safari 11+, Edge 16+
-//! - Requires `wasm-bindgen` and `wasm-pack` for building
-//! - Compatible with modern JavaScript frameworks (React, Vue, Angular)
-//! - Supports both ES modules and CommonJS
-//!
-//! ## Usage in JavaScript
-//!
-//! ```javascript
-//! import init, {
-//!     create_deposit_note,
-//!     generate_withdrawal_proof_placeholder,
-//!     hash_transaction_outputs
-//! } from './pkg/zkane_wasm.js';
-//!
-//! // Initialize the WASM module
-//! await init();
-//!
-//! // Create a deposit note
-//! const assetId = { block: 2, tx: 1 };
-//! const denomination = "1000000";
-//! const depositNote = create_deposit_note(assetId, denomination);
-//!
-//! console.log("Deposit created:", depositNote.commitment());
-//! ```
-//!
-//! ## Security Considerations
-//!
-//! - **Client-Side Cryptography**: All cryptographic operations run in the browser
-//! - **Memory Safety**: WASM provides memory isolation from JavaScript
-//! - **Secure Random Generation**: Uses browser's crypto.getRandomValues()
-//! - **No Network Dependencies**: All operations work offline
-//!
-//! ## Performance Notes
-//!
-//! - **WASM Overhead**: Some performance cost compared to native implementations
-//! - **Memory Usage**: Efficient memory management with automatic cleanup
-//! - **Bundle Size**: Optimized for minimal WASM binary size
-//! - **Initialization**: One-time WASM module initialization required
+//! This module provides the WASM interface with simplified implementations
+//! to avoid compilation issues with alkanes/metashrew dependencies.
 
 use wasm_bindgen::prelude::*;
-use serde::{Deserialize, Serialize};
-use js_sys::Promise;
-use wasm_bindgen_futures::future_to_promise;
-
-// Set up console error panic hook for better debugging
-#[cfg(feature = "console_error_panic_hook")]
-pub use console_error_panic_hook::set_once as set_panic_hook;
-
-// Initialize the WASM module
-#[wasm_bindgen(start)]
-pub fn main() {
-    #[cfg(feature = "console_error_panic_hook")]
-    set_panic_hook();
-}
+use serde::Deserialize;
+use crate::types::*;
+use sha2::{Digest, Sha256};
 
 // Utility macro for error handling
 macro_rules! js_error {
@@ -83,21 +16,21 @@ macro_rules! js_error {
 }
 
 // ============================================================================
-// Core Types for JavaScript Interop
+// Core WASM-bindgen Types for JavaScript Interop
 // ============================================================================
 
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct JsAlkaneId {
+pub struct WasmAlkaneId {
     block: u64, // Use u64 for JS compatibility
     tx: u64,
 }
 
 #[wasm_bindgen]
-impl JsAlkaneId {
+impl WasmAlkaneId {
     #[wasm_bindgen(constructor)]
-    pub fn new(block: u64, tx: u64) -> JsAlkaneId {
-        JsAlkaneId { block, tx }
+    pub fn new(block: u64, tx: u64) -> WasmAlkaneId {
+        WasmAlkaneId { block, tx }
     }
 
     #[wasm_bindgen(getter)]
@@ -111,19 +44,56 @@ impl JsAlkaneId {
     }
 }
 
+impl From<&AlkaneId> for WasmAlkaneId {
+    fn from(id: &AlkaneId) -> Self {
+        WasmAlkaneId {
+            block: id.block as u64,
+            tx: id.tx as u64,
+        }
+    }
+}
+
+impl From<WasmAlkaneId> for AlkaneId {
+    fn from(id: WasmAlkaneId) -> Self {
+        AlkaneId {
+            block: id.block as u128,
+            tx: id.tx as u128,
+        }
+    }
+}
+
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
-pub struct JsDepositNote {
+pub struct WasmDepositNote {
     secret: String,
     nullifier: String,
     commitment: String,
-    asset_id: JsAlkaneId,
-    denomination: String, // Use string for large numbers
+    asset_id: WasmAlkaneId,
+    denomination: String,
     leaf_index: u32,
 }
 
 #[wasm_bindgen]
-impl JsDepositNote {
+impl WasmDepositNote {
+    #[wasm_bindgen(constructor)]
+    pub fn new(
+        secret: String,
+        nullifier: String,
+        commitment: String,
+        asset_id: WasmAlkaneId,
+        denomination: String,
+        leaf_index: u32,
+    ) -> WasmDepositNote {
+        WasmDepositNote {
+            secret,
+            nullifier,
+            commitment,
+            asset_id,
+            denomination,
+            leaf_index,
+        }
+    }
+
     #[wasm_bindgen(getter)]
     pub fn secret(&self) -> String {
         self.secret.clone()
@@ -140,7 +110,7 @@ impl JsDepositNote {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn asset_id(&self) -> JsAlkaneId {
+    pub fn asset_id(&self) -> WasmAlkaneId {
         self.asset_id.clone()
     }
 
@@ -155,8 +125,21 @@ impl JsDepositNote {
     }
 }
 
+impl From<WasmDepositNote> for JsDepositNote {
+    fn from(wasm_note: WasmDepositNote) -> Self {
+        JsDepositNote::new(
+            wasm_note.secret,
+            wasm_note.nullifier,
+            wasm_note.commitment,
+            wasm_note.asset_id.into(),
+            wasm_note.denomination,
+            wasm_note.leaf_index,
+        )
+    }
+}
+
 // ============================================================================
-// Cryptographic Functions (Simplified)
+// Cryptographic Functions (Simplified for WASM compatibility)
 // ============================================================================
 
 /// Generate a random secret (32 bytes as hex string)
@@ -175,7 +158,7 @@ pub fn generate_random_nullifier() -> String {
     hex::encode(nullifier)
 }
 
-/// Generate a commitment from secret and nullifier (simplified)
+/// Generate a commitment from secret and nullifier (simplified using SHA256)
 #[wasm_bindgen]
 pub fn generate_commitment_from_secret_nullifier(
     secret_hex: &str,
@@ -194,16 +177,16 @@ pub fn generate_commitment_from_secret_nullifier(
     }
 
     // Simplified commitment generation using SHA256
-    use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(&secret_bytes);
     hasher.update(&nullifier_bytes);
+    hasher.update(b"commitment"); // Domain separator
     let commitment: [u8; 32] = hasher.finalize().into();
 
     Ok(hex::encode(commitment))
 }
 
-/// Generate a nullifier hash from nullifier (simplified)
+/// Generate a nullifier hash from nullifier (simplified using SHA256)
 #[wasm_bindgen]
 pub fn generate_nullifier_hash_from_nullifier(nullifier_hex: &str) -> Result<String, JsValue> {
     let nullifier_bytes = hex::decode(nullifier_hex)
@@ -214,10 +197,9 @@ pub fn generate_nullifier_hash_from_nullifier(nullifier_hex: &str) -> Result<Str
     }
 
     // Simplified nullifier hash using SHA256
-    use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
     hasher.update(&nullifier_bytes);
-    hasher.update(b"nullifier_hash");
+    hasher.update(b"nullifier_hash"); // Domain separator
     let nullifier_hash: [u8; 32] = hasher.finalize().into();
 
     Ok(hex::encode(nullifier_hash))
@@ -227,12 +209,12 @@ pub fn generate_nullifier_hash_from_nullifier(nullifier_hex: &str) -> Result<Str
 // Deposit Note Management (Simplified)
 // ============================================================================
 
-/// Generate a complete deposit note for the given asset and denomination
+/// Generate a complete deposit note (simplified implementation)
 #[wasm_bindgen]
 pub fn create_deposit_note(
-    asset_id: &JsAlkaneId,
+    asset_id: &WasmAlkaneId,
     denomination: &str,
-) -> Result<JsDepositNote, JsValue> {
+) -> Result<WasmDepositNote, JsValue> {
     let denom: u128 = denomination.parse()
         .map_err(|e| js_error!(format!("Invalid denomination: {}", e)))?;
 
@@ -243,19 +225,19 @@ pub fn create_deposit_note(
     // Generate commitment
     let commitment = generate_commitment_from_secret_nullifier(&secret, &nullifier)?;
 
-    Ok(JsDepositNote {
+    Ok(WasmDepositNote::new(
         secret,
         nullifier,
         commitment,
-        asset_id: asset_id.clone(),
-        denomination: denom.to_string(),
-        leaf_index: 0, // Placeholder
-    })
+        asset_id.clone(),
+        denom.to_string(),
+        0, // Placeholder leaf index
+    ))
 }
 
-/// Verify that a deposit note is valid (simplified)
+/// Verify that a deposit note is valid (simplified implementation)
 #[wasm_bindgen]
-pub fn verify_deposit_note_validity(note: &JsDepositNote) -> Result<bool, JsValue> {
+pub fn verify_deposit_note_validity(note: &WasmDepositNote) -> Result<bool, JsValue> {
     // Verify that the commitment matches the secret and nullifier
     let expected_commitment = generate_commitment_from_secret_nullifier(
         &note.secret, 
@@ -281,9 +263,8 @@ pub fn hash_transaction_outputs(outputs_json: &str) -> Result<String, JsValue> {
     let outputs: Vec<TxOutput> = serde_json::from_str(outputs_json)
         .map_err(|e| js_error!(format!("Invalid outputs JSON: {}", e)))?;
 
-    use sha2::{Digest, Sha256};
+    // Use SHA256 for output hashing
     let mut hasher = Sha256::new();
-
     for output in outputs {
         hasher.update(&output.value.to_le_bytes());
         hasher.update(output.script_pubkey.as_bytes());
@@ -291,6 +272,37 @@ pub fn hash_transaction_outputs(outputs_json: &str) -> Result<String, JsValue> {
 
     let hash: [u8; 32] = hasher.finalize().into();
     Ok(hex::encode(hash))
+}
+
+// ============================================================================
+// Pool ID Generation (Simplified)
+// ============================================================================
+
+/// Generate deterministic pool ID for asset/denomination pair
+#[wasm_bindgen]
+pub fn generate_pool_id(asset_id: &WasmAlkaneId, denomination: &str) -> Result<WasmAlkaneId, JsValue> {
+    let denom: u128 = denomination.parse()
+        .map_err(|e| js_error!(format!("Invalid denomination: {}", e)))?;
+
+    // Use same logic as factory contract for deterministic pool ID generation
+    let mut hasher_input = Vec::new();
+    hasher_input.extend_from_slice(&asset_id.block.to_le_bytes());
+    hasher_input.extend_from_slice(&asset_id.tx.to_le_bytes());
+    hasher_input.extend_from_slice(&denom.to_le_bytes());
+    
+    let mut hash_value = 0u128;
+    for chunk in hasher_input.chunks(16) {
+        let mut bytes = [0u8; 16];
+        bytes[..chunk.len()].copy_from_slice(chunk);
+        hash_value ^= u128::from_le_bytes(bytes);
+    }
+    
+    let pool_id = WasmAlkaneId {
+        block: 6, // ZKANE_INSTANCE_BLOCK
+        tx: hash_value as u64, // Truncate for JS compatibility
+    };
+
+    Ok(pool_id)
 }
 
 // ============================================================================
@@ -370,37 +382,6 @@ pub fn generate_withdrawal_witness(
 }
 
 // ============================================================================
-// Pool ID Generation (Factory Pattern)
-// ============================================================================
-
-/// Generate deterministic pool ID for asset/denomination pair
-#[wasm_bindgen]
-pub fn generate_pool_id(asset_id: &JsAlkaneId, denomination: &str) -> Result<JsAlkaneId, JsValue> {
-    let denom: u128 = denomination.parse()
-        .map_err(|e| js_error!(format!("Invalid denomination: {}", e)))?;
-
-    // Use same logic as factory contract
-    let mut hasher_input = Vec::new();
-    hasher_input.extend_from_slice(&asset_id.block.to_le_bytes());
-    hasher_input.extend_from_slice(&asset_id.tx.to_le_bytes());
-    hasher_input.extend_from_slice(&denom.to_le_bytes());
-    
-    let mut hash_value = 0u128;
-    for chunk in hasher_input.chunks(16) {
-        let mut bytes = [0u8; 16];
-        bytes[..chunk.len()].copy_from_slice(chunk);
-        hash_value ^= u128::from_le_bytes(bytes);
-    }
-    
-    let pool_id = JsAlkaneId {
-        block: 6, // ZKANE_INSTANCE_BLOCK
-        tx: hash_value as u64, // Truncate for JS compatibility
-    };
-
-    Ok(pool_id)
-}
-
-// ============================================================================
 // Proof Generation (Placeholder for Noir Integration)
 // ============================================================================
 
@@ -470,7 +451,7 @@ pub fn is_valid_hex(hex_str: &str, expected_length: usize) -> bool {
 // Version Information
 // ============================================================================
 
-/// Get the ZKane WASM version
+/// Get the ZKane frontend version
 #[wasm_bindgen]
 pub fn get_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
@@ -480,7 +461,7 @@ pub fn get_version() -> String {
 #[wasm_bindgen]
 pub fn get_zkane_info() -> JsValue {
     let info = serde_json::json!({
-        "name": "ZKane Privacy Pool",
+        "name": "ZKane Privacy Pool Frontend",
         "version": env!("CARGO_PKG_VERSION"),
         "description": "Privacy pool for alkanes assets using zero-knowledge proofs",
         "features": [
@@ -489,34 +470,11 @@ pub fn get_zkane_info() -> JsValue {
             "Zero-knowledge proofs",
             "Factory pattern",
             "Witness envelope support",
-            "Transaction output validation"
+            "Transaction output validation",
+            "Direct core integration",
+            "Simplified WASM implementation"
         ]
     });
 
     serde_wasm_bindgen::to_value(&info).unwrap_or(JsValue::NULL)
-}
-
-// ============================================================================
-// Error Handling
-// ============================================================================
-
-#[wasm_bindgen]
-pub struct ZKaneError {
-    message: String,
-}
-
-#[wasm_bindgen]
-impl ZKaneError {
-    #[wasm_bindgen(getter)]
-    pub fn message(&self) -> String {
-        self.message.clone()
-    }
-}
-
-impl From<anyhow::Error> for ZKaneError {
-    fn from(err: anyhow::Error) -> Self {
-        ZKaneError {
-            message: err.to_string(),
-        }
-    }
 }

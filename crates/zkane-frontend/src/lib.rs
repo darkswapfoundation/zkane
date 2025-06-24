@@ -11,12 +11,22 @@ mod components;
 mod services;
 mod types;
 mod utils;
+mod wasm_bindings;
 
+// Testable version for wasm-pack testing
+#[cfg(feature = "testable")]
+mod lib_testable;
+
+// Export main modules
 pub use app::*;
 pub use components::*;
 pub use services::*;
 pub use types::*;
 pub use utils::*;
+
+// Export testable components when feature is enabled
+#[cfg(feature = "testable")]
+pub use lib_testable::*;
 
 // WASM entry point
 #[cfg(not(test))]

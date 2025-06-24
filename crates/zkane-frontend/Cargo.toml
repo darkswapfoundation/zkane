@@ -6,7 +6,7 @@ description = "ZKane Privacy Pool Frontend - Full-stack Rust web application"
 authors = ["ZKane Team"]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # Leptos framework
@@ -39,20 +39,6 @@ hex = { workspace = true }
 uuid = { version = "1.0", features = ["v4", "js"] }
 sha2 = { workspace = true }
 
-# ZKane dependencies - only WASM-compatible ones
-zkane-wasm = { path = "../zkane-wasm" }
-
-# Note: zkane-common, zkane-crypto, zkane-core removed temporarily to avoid alkanes/metashrew-support compilation issues
-# These will be re-enabled once the metashrew-support type annotation issues are resolved upstream
-# zkane-common = { path = "../zkane-common" }
-# zkane-crypto = { path = "../zkane-crypto" }
-# zkane-core = { path = "../zkane-core" }
-
-# Alkanes dependencies removed - using local types instead to avoid metashrew-support compilation issues
-# alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
-# protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
-# ordinals = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
-
 # Logging and debugging
 log = "0.4"
 console_log = "1.0"
@@ -68,23 +54,12 @@ gloo-file = "0.3.0"
 
 # Development and testing dependencies
 [dev-dependencies]
-tokio = { version = "1.0", features = ["macros", "rt", "time"], default-features = false }
-wasm-bindgen-test = { workspace = true }
+wasm-bindgen = "0.2.99"
+wasm-bindgen-test = "0.3.42"
+web-sys = "0.3"
 pretty_assertions = "1.4"
 
 [features]
 default = ["console_error_panic_hook"]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
-
-[profile.release]
-opt-level = 'z'
-codegen-units = 1
-lto = true
-
-[profile.test]
-opt-level = 1
-debug = true
-
-# WASM-specific test configuration
-[package.metadata.wasm-pack.profile.test]
-wasm-opt = false
+testable = []

@@ -1,0 +1,33 @@
+[build]
+# The index HTML file to drive the bundling process.
+target = "index.html"
+
+# Build in release mode.
+release = false
+
+# The public URL from which assets are to be served.
+public_url = "/"
+
+# Global dist field
+dist = "dist"
+
+[watch]
+# Paths to watch for changes
+watch = ["src", "index.html", "src/styles.css"]
+
+[serve]
+# The addresses to serve on
+addresses = ["0.0.0.0"]
+
+# The port to serve on
+port = 9080
+
+# Automatically open the app in the default browser.
+open = false
+
+# Disable auto-reload of the web app.
+no_autoreload = false
+
+[clean]
+# Additional paths to clean.
+cargo = true

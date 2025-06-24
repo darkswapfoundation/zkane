@@ -1,102 +1,9 @@
 //! Service layer for ZKane Frontend application
 
 use crate::types::*;
+use crate::wasm_bindings::*;
 use leptos::*;
-use wasm_bindgen::prelude::*;
-use sha2::{Digest, Sha256};
 use wasm_bindgen_futures::spawn_local;
-// Temporarily removed zkane_wasm import to avoid compilation issues
-// use zkane_wasm::*;
-
-// Placeholder implementations for zkane_wasm functions
-fn create_deposit_note(asset_id: &AlkaneId, amount: &str) -> Result<JsDepositNote, JsValue> {
-    // Mock implementation
-    Ok(JsDepositNote::new(
-        "0123456789abcdef".repeat(4),
-        "fedcba9876543210".repeat(4),
-        "abcdef0123456789".repeat(4),
-        asset_id.clone(),
-        amount.to_string(),
-        0,
-    ))
-}
-
-fn hash_transaction_outputs(outputs_json: &str) -> Result<String, JsValue> {
-    // Mock implementation using simple hash
-    let mut hasher = Sha256::new();
-    hasher.update(outputs_json.as_bytes());
-    let hash: [u8; 32] = hasher.finalize().into();
-    Ok(hex::encode(hash))
-}
-
-fn generate_withdrawal_proof_placeholder(
-    secret: &str,
-    nullifier: &str,
-    merkle_path: &str,
-    outputs_hash: &str,
-) -> Result<String, JsValue> {
-    // Mock proof generation
-    let mut proof = Vec::new();
-    proof.extend_from_slice(secret.as_bytes());
-    proof.extend_from_slice(nullifier.as_bytes());
-    proof.extend_from_slice(merkle_path.as_bytes());
-    proof.extend_from_slice(outputs_hash.as_bytes());
-    Ok(hex::encode(proof))
-}
-
-fn generate_nullifier_hash_from_nullifier(nullifier: &str) -> Result<String, JsValue> {
-    // Mock nullifier hash
-    let mut hasher = Sha256::new();
-    hasher.update(nullifier.as_bytes());
-    hasher.update(b"nullifier_hash");
-    let hash: [u8; 32] = hasher.finalize().into();
-    Ok(hex::encode(hash))
-}
-
-fn verify_deposit_note_validity(_note: &JsDepositNote) -> Result<bool, JsValue> {
-    // Mock validation - always return true
-    Ok(true)
-}
-
-fn generate_pool_id(asset_id: &AlkaneId, denomination: &str) -> Result<AlkaneId, JsValue> {
-    // Mock pool ID generation
-    let denom: u128 = denomination.parse().unwrap_or(0);
-    let hash_value = asset_id.block ^ asset_id.tx ^ denom;
-    Ok(AlkaneId {
-        block: 6, // ZKANE_INSTANCE_BLOCK
-        tx: hash_value,
-    })
-}
-
-fn generate_deposit_witness(commitment: &str) -> Result<String, JsValue> {
-    let witness_data = serde_json::json!({
-        "commitment": commitment
-    });
-    Ok(witness_data.to_string())
-}
-
-fn generate_withdrawal_witness(
-    proof: &str,
-    merkle_root: &str,
-    nullifier_hash: &str,
-    path_elements: &str,
-    path_indices: &str,
-    leaf_index: u32,
-    commitment: &str,
-    outputs_hash: &str,
-) -> Result<String, JsValue> {
-    let witness_data = serde_json::json!({
-        "proof": proof,
-        "merkle_root": merkle_root,
-        "nullifier_hash": nullifier_hash,
-        "path_elements": path_elements,
-        "path_indices": path_indices,
-        "leaf_index": leaf_index,
-        "commitment": commitment,
-        "outputs_hash": outputs_hash
-    });
-    Ok(witness_data.to_string())
-}
 
 #[derive(Clone)]
 pub struct ZKaneService;
@@ -106,21 +13,23 @@ impl ZKaneService {
         Self
     }
 
-    /// Create a new deposit note using zkane-wasm
+    /// Create a new deposit note using integrated WASM bindings
     pub async fn create_deposit(
         &self,
         asset_id: AlkaneId,
         amount: u128,
     ) -> Result<DepositNote, ZKaneError> {
         let amount_str = amount.to_string();
+        let wasm_asset_id = WasmAlkaneId::from(&asset_id);
         
-        let js_note = create_deposit_note(&asset_id, &amount_str)
+        let wasm_note = create_deposit_note(&wasm_asset_id, &amount_str)
             .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
             
+        let js_note = JsDepositNote::from(wasm_note);
         Ok(DepositNote::from_js(js_note))
     }
 
-    /// Generate withdrawal proof using zkane-wasm
+    /// Generate withdrawal proof using integrated WASM bindings
     pub async fn generate_withdrawal_proof(
         &self,
         deposit_note: &DepositNote,
@@ -134,7 +43,7 @@ impl ZKaneService {
         let outputs_hash = hash_transaction_outputs(&outputs_json)
             .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
 
-        // Generate the proof using zkane-wasm
+        // Generate the proof using integrated WASM bindings
         let merkle_path_json = serde_json::to_string(merkle_path)
             .map_err(|e| ZKaneError::SerializationError(e.to_string()))?;
 
@@ -164,10 +73,17 @@ impl ZKaneService {
 
     /// Verify a deposit note is valid
     pub async fn verify_deposit_note(&self, note: &DepositNote) -> Result<bool, ZKaneError> {
-        let js_note = create_deposit_note(&note.asset_id, &note.denomination.to_string())
-            .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
+        let wasm_asset_id = WasmAlkaneId::from(&note.asset_id);
+        let wasm_note = WasmDepositNote::new(
+            note.secret.clone(),
+            note.nullifier.clone(),
+            note.commitment.clone(),
+            wasm_asset_id,
+            note.denomination.to_string(),
+            note.leaf_index,
+        );
 
-        let is_valid = verify_deposit_note_validity(&js_note)
+        let is_valid = verify_deposit_note_validity(&wasm_note)
             .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
 
         Ok(is_valid)
@@ -175,10 +91,11 @@ impl ZKaneService {
 
     /// Generate pool ID for asset/denomination pair
     pub fn generate_pool_id(&self, asset_id: &AlkaneId, denomination: u128) -> Result<AlkaneId, ZKaneError> {
-        let pool_id = generate_pool_id(asset_id, &denomination.to_string())
+        let wasm_asset_id = WasmAlkaneId::from(asset_id);
+        let wasm_pool_id = generate_pool_id(&wasm_asset_id, &denomination.to_string())
             .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
 
-        Ok(pool_id)
+        Ok(AlkaneId::from(wasm_pool_id))
     }
 }
 

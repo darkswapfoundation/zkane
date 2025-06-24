@@ -2,10 +2,8 @@
 
 use leptos::*;
 use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::spawn_local;
 use gloo_file::callbacks::read_as_text;
 use crate::types::*;
-use crate::services::*;
 
 #[component]
 pub fn NoteInput(
