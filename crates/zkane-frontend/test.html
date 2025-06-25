@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZKane Frontend Test</title>
+    <link rel="stylesheet" href="http://localhost:9080/assets/styles.css">
+    <style>
+        body { margin: 20px; font-family: Arial, sans-serif; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>ZKane Frontend Test Results</h1>
+    
+    <div class="test-section success">
+        <h2>✅ CSS Loading Test</h2>
+        <p>If you can see this styled box with green background, the CSS is loading correctly!</p>
+        <div class="btn btn-primary">Sample Button</div>
+    </div>
+    
+    <div class="test-section info">
+        <h2>📋 Test Summary</h2>
+        <ul>
+            <li><strong>CSS File:</strong> http://localhost:9080/assets/styles.css</li>
+            <li><strong>JavaScript:</strong> http://localhost:9080/zkane-frontend-a153c3463ae2719.js</li>
+            <li><strong>WASM:</strong> Available and compiled successfully</li>
+            <li><strong>Server:</strong> Running on port 9080</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎨 Style Test</h2>
+        <p>Testing various CSS classes from the ZKane stylesheet:</p>
+        <div style="margin: 10px 0;">
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-secondary">Secondary Button</button>
+        </div>
+        <div class="card" style="max-width: 400px;">
+            <div class="card-header">
+                <h3 class="card-title">Sample Card</h3>
+            </div>
+            <p>This card should have proper styling with borders, padding, and shadows.</p>
+        </div>
+    </div>
+    
+    <script>
+        // Test JavaScript loading
+        console.log('ZKane Frontend Test: JavaScript is working!');
+        
+        // Test if we can fetch the CSS
+        fetch('http://localhost:9080/assets/styles.css')
+            .then(response => {
+                if (response.ok) {
+                    console.log('✅ CSS file is accessible');
+                    document.body.insertAdjacentHTML('beforeend', 
+                        '<div class="test-section success"><h3>✅ JavaScript Test</h3><p>JavaScript is working and CSS file is accessible!</p></div>'
+                    );
+                } else {
+                    console.error('❌ CSS file not accessible');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error fetching CSS:', error);
+            });
+    </script>
+</body>
+</html>

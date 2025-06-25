@@ -14,12 +14,11 @@ pub use deposit::*;
 pub use withdraw::*;
 pub use notifications::*;
 pub use utils::*;
-
-// Re-export specific items from sub-modules
-pub use pool_list::{PoolCard, PoolFilters};
-pub use history::NoteCard;
-pub use settings::{ThemeSelector, ToggleSetting};
-pub use help::SecurityTip;
+pub use pool_list::*;
+pub use history::*;
+pub use settings::*;
+pub use help::*;
+pub use about::*;
 
 use leptos::*;
 use crate::types::*;

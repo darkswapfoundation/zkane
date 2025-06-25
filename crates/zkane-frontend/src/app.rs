@@ -53,7 +53,6 @@ pub fn App() -> impl IntoView {
         <Meta name="viewport" content="width=device-width, initial-scale=1"/>
         <Meta charset="utf-8"/>
         
-        <Link rel="stylesheet" href="/assets/styles.css"/>
         <Link rel="icon" type_="image/png" href="/assets/favicon.png"/>
 
         <Router>

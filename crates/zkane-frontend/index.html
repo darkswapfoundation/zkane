@@ -11,10 +11,10 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="/src/styles.css" as="style">
+    <link rel="preload" href="/assets/styles.css" as="style">
     
     <!-- Styles -->
-    <link rel="stylesheet" href="/src/styles.css">
+    <link rel="stylesheet" href="/assets/styles.css">
     
     <!-- Theme detection script -->
     <script>
@@ -43,47 +43,70 @@
         </div>
     </div>
 
-    <!-- WASM and JS modules -->
-    <script type="module">
-        import init, { run_app } from '/pkg/zkane_frontend.js';
-        
-        async function main() {
-            try {
-                // Initialize WASM module
-                await init();
+    <!-- WASM loading will be handled by Trunk automatically -->
+    <script>
+        // Wait for WASM to load and then remove loading screen
+        function checkForApp() {
+            // Check if the Leptos app has mounted by looking for various indicators
+            const appContent = document.querySelector('.app .header, .app main, .app .footer, .header, main, .footer, [class*="header"], [class*="main"], [class*="footer"]');
+            const hasAppClass = document.querySelector('.app');
+            const hasContent = document.body.children.length > 1; // More than just the app div
+            
+            console.log('Checking for app...', {
+                appContent: !!appContent,
+                hasAppClass: !!hasAppClass,
+                hasContent: hasContent,
+                bodyChildren: document.body.children.length
+            });
+            
+            if (appContent || (hasAppClass && hasContent)) {
+                console.log('ZKane app detected, removing loading screen');
                 
-                // Start the Leptos application
-                run_app();
-                
-                // Remove loading indicator
+                // Remove loading indicator with fade effect
                 const loadingEl = document.querySelector('.app-loading');
                 if (loadingEl) {
-                    loadingEl.remove();
+                    loadingEl.style.opacity = '0';
+                    loadingEl.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        loadingEl.remove();
+                        console.log('Loading screen removed successfully');
+                    }, 500);
                 }
-            } catch (error) {
-                console.error('Failed to initialize ZKane application:', error);
-                
-                // Show error message
-                const appEl = document.getElementById('app');
-                appEl.innerHTML = `
-                    <div class="app-error">
-                        <div class="error-container">
-                            <h2>Failed to Load ZKane</h2>
-                            <p>There was an error initializing the application. Please refresh the page and try again.</p>
-                            <details>
-                                <summary>Error Details</summary>
-                                <pre>${error.message || error}</pre>
-                            </details>
-                            <button onclick="window.location.reload()" class="btn btn-primary">
-                                Reload Application
-                            </button>
-                        </div>
-                    </div>
-                `;
+            } else {
+                // Check again in 200ms
+                setTimeout(checkForApp, 200);
             }
         }
         
-        main();
+        // Start checking after a short delay to let WASM initialize
+        setTimeout(() => {
+            console.log('Starting app detection...');
+            checkForApp();
+        }, 1000);
+        
+        // Fallback: remove loading screen after 8 seconds regardless
+        setTimeout(() => {
+            const loadingEl = document.querySelector('.app-loading');
+            if (loadingEl) {
+                console.log('Fallback: removing loading screen after timeout');
+                loadingEl.style.opacity = '0';
+                loadingEl.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    loadingEl.remove();
+                }, 500);
+            }
+        }, 8000);
+        
+        // Additional fallback: remove on any click after 3 seconds
+        setTimeout(() => {
+            document.addEventListener('click', function() {
+                const loadingEl = document.querySelector('.app-loading');
+                if (loadingEl) {
+                    console.log('Manual: removing loading screen on click');
+                    loadingEl.remove();
+                }
+            });
+        }, 3000);
     </script>
 
     <style>
