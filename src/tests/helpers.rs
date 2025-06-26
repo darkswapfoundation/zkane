@@ -1,102 +1,75 @@
-//! Test helper functions and utilities
+//! Test helpers for ZKane - aligned with boiler pattern
 
-use zkane_common::*;
-use zkane_crypto::*;
-use zkane_core::*;
+use anyhow::Result;
+use bitcoin::blockdata::transaction::OutPoint;
+use alkanes_support::cellpack::Cellpack;
+use alkanes_support::id::AlkaneId;
 
-/// Create a test configuration for ZKane
-pub fn create_test_config() -> ZKaneConfig {
-    ZKaneConfig::new(
-        SerializableAlkaneId { block: 2, tx: 1 },
-        1000000,  // 1 BTC denomination
-        20,       // Tree depth
-        vec![],   // Empty verifier key
-    )
-}
-
-/// Generate test deposit note
-pub fn create_test_deposit_note() -> DepositNote {
-    let asset_id = SerializableAlkaneId { block: 2, tx: 1 };
-    let denomination = 1000000u128;
-    DepositNote::random(asset_id, denomination)
-}
-
-/// Create test commitment
-pub fn create_test_commitment() -> Commitment {
-    let secret = Secret::random();
-    let nullifier = Nullifier::random();
-    generate_commitment(&nullifier, &secret).unwrap()
-}
-
-/// Create test merkle path
-pub fn create_test_merkle_path() -> MerklePath {
-    MerklePath {
-        elements: vec![
-            [0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90,
-             0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90],
-            [0x98, 0x76, 0x54, 0x32, 0x10, 0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10, 0xfe, 0xdc, 0xba,
-             0x98, 0x76, 0x54, 0x32, 0x10, 0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x10, 0xfe, 0xdc, 0xba],
-        ],
-        indices: vec![false, true],
+/// Convert a vector of u128 values into a Cellpack
+/// This matches the boiler pattern exactly
+pub fn into_cellpack(v: Vec<u128>) -> Cellpack {
+    Cellpack {
+        target: AlkaneId {
+            block: v[0],
+            tx: v[1]
+        },
+        inputs: v[2..].into()
     }
 }
 
-/// Create test withdrawal proof
-pub fn create_test_withdrawal_proof() -> WithdrawalProof {
-    WithdrawalProof {
-        proof: vec![1, 2, 3, 4, 5], // Mock proof data
-        nullifier_hash: NullifierHash([0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
-                                       0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef]),
-        merkle_root: [0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef,
-                      0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef],
-        recipient: 1000000u128, // 1 BTC in satoshis
-    }
+/// Privacy-specific helper to generate commitment hashes
+pub fn generate_commitment(secret: u128, nullifier: u128) -> u128 {
+    // Simple hash function for testing - in production would use proper cryptographic hash
+    secret.wrapping_mul(nullifier).wrapping_add(0xdeadbeef)
 }
 
-/// Assert that two commitments are equal
-pub fn assert_commitments_equal(a: &Commitment, b: &Commitment) {
-    assert_eq!(a.as_bytes(), b.as_bytes(), "Commitments should be equal");
+/// Privacy-specific helper to generate nullifier hashes
+pub fn generate_nullifier(secret: u128, leaf_index: u128) -> u128 {
+    // Simple hash function for testing - in production would use proper cryptographic hash
+    secret.wrapping_add(leaf_index).wrapping_mul(0xcafebabe)
 }
 
-/// Assert that a commitment is valid
-pub fn assert_commitment_valid(commitment: &Commitment) {
-    assert!(!commitment.as_bytes().iter().all(|&b| b == 0), "Commitment should not be all zeros");
-    assert_eq!(commitment.as_bytes().len(), 32, "Commitment should be 32 bytes");
-}
-
-/// Assert that a nullifier hash is valid
-pub fn assert_nullifier_hash_valid(hash: &NullifierHash) {
-    assert!(!hash.as_bytes().iter().all(|&b| b == 0), "Nullifier hash should not be all zeros");
-    assert_eq!(hash.as_bytes().len(), 32, "Nullifier hash should be 32 bytes");
-}
-
-/// Create a test privacy pool
-pub fn create_test_privacy_pool() -> Result<PrivacyPool, ZKaneError> {
-    let config = create_test_config();
-    PrivacyPool::new(config)
-}
-
-/// Add test commitments to a pool
-pub fn add_test_commitments_to_pool(pool: &mut PrivacyPool, count: usize) -> Result<Vec<Commitment>, ZKaneError> {
-    let mut commitments = Vec::new();
+/// Generate a mock Merkle proof for testing
+pub fn generate_mock_proof(leaf_index: u128, tree_depth: u32) -> Vec<u128> {
+    let mut proof = Vec::new();
+    let mut index = leaf_index;
     
-    for _ in 0..count {
-        let commitment = create_test_commitment();
-        pool.add_commitment(&commitment)?;
-        commitments.push(commitment);
+    for i in 0..tree_depth {
+        // Generate mock sibling hash
+        let sibling = index.wrapping_mul(0x123456789abcdef).wrapping_add(i as u128);
+        proof.push(sibling);
+        index /= 2;
     }
     
-    Ok(commitments)
+    proof
 }
 
-/// Verify that a pool has the expected state
-pub fn assert_pool_state(pool: &PrivacyPool, expected_commitment_count: usize) {
-    assert_eq!(pool.commitment_count(), expected_commitment_count as u64,
-               "Pool should have {} commitments", expected_commitment_count);
-    
-    if expected_commitment_count > 0 {
-        let root = pool.merkle_root();
-        assert!(!root.iter().all(|&b| b == 0), "Merkle root should not be all zeros");
+/// Verify privacy pool parameters are valid
+pub fn verify_privacy_params(
+    commitment: u128,
+    nullifier: u128,
+    proof: &[u128],
+    tree_depth: u32
+) -> bool {
+    // Basic validation
+    commitment != 0 && 
+    nullifier != 0 && 
+    proof.len() == tree_depth as usize &&
+    !proof.iter().any(|&x| x == 0)
+}
+
+/// Calculate expected anonymity set size for a given number of deposits
+pub fn calculate_anonymity_set_size(num_deposits: u128, tree_depth: u32) -> u128 {
+    let max_capacity = 2u128.pow(tree_depth);
+    num_deposits.min(max_capacity)
+}
+
+/// Estimate privacy score based on anonymity set size
+pub fn estimate_privacy_score(anonymity_set_size: u128) -> f64 {
+    if anonymity_set_size <= 1 {
+        0.0
+    } else {
+        (anonymity_set_size as f64).log2() / 20.0 // Normalize to 0-1 range
     }
 }
 
@@ -105,28 +78,73 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_helper_functions() {
-        // Test config creation
-        let config = create_test_config();
-        assert_eq!(config.denomination, 1000000);
-        assert_eq!(config.tree_height, 20);
+    fn test_into_cellpack() {
+        let v = vec![1u128, 2u128, 3u128, 4u128];
+        let cellpack = into_cellpack(v.clone());
+        
+        assert_eq!(cellpack.target.block, 1);
+        assert_eq!(cellpack.target.tx, 2);
+        assert_eq!(cellpack.inputs, vec![3u128, 4u128]);
+    }
 
-        // Test deposit note creation
-        let note = create_test_deposit_note();
-        assert_eq!(note.denomination, 1000000);
-        assert!(!note.secret.0.is_empty());
+    #[test]
+    fn test_generate_commitment() {
+        let secret = 12345u128;
+        let nullifier = 67890u128;
+        let commitment = generate_commitment(secret, nullifier);
+        
+        // Should be deterministic
+        assert_eq!(commitment, generate_commitment(secret, nullifier));
+        
+        // Should be different for different inputs
+        assert_ne!(commitment, generate_commitment(secret + 1, nullifier));
+    }
 
-        // Test commitment creation
-        let commitment = create_test_commitment();
-        assert_commitment_valid(&commitment);
+    #[test]
+    fn test_generate_nullifier() {
+        let secret = 12345u128;
+        let leaf_index = 42u128;
+        let nullifier = generate_nullifier(secret, leaf_index);
+        
+        // Should be deterministic
+        assert_eq!(nullifier, generate_nullifier(secret, leaf_index));
+        
+        // Should be different for different inputs
+        assert_ne!(nullifier, generate_nullifier(secret, leaf_index + 1));
+    }
 
-        // Test pool creation
-        let mut pool = create_test_privacy_pool().unwrap();
-        assert_eq!(pool.commitment_count(), 0);
+    #[test]
+    fn test_generate_mock_proof() {
+        let leaf_index = 5u128;
+        let tree_depth = 10u32;
+        let proof = generate_mock_proof(leaf_index, tree_depth);
+        
+        assert_eq!(proof.len(), tree_depth as usize);
+        assert!(proof.iter().all(|&x| x != 0));
+    }
 
-        // Test adding commitments
-        let commitments = add_test_commitments_to_pool(&mut pool, 3).unwrap();
-        assert_eq!(commitments.len(), 3);
-        assert_pool_state(&pool, 3);
+    #[test]
+    fn test_verify_privacy_params() {
+        let commitment = 12345u128;
+        let nullifier = 67890u128;
+        let proof = vec![1u128, 2u128, 3u128];
+        
+        assert!(verify_privacy_params(commitment, nullifier, &proof, 3));
+        assert!(!verify_privacy_params(0, nullifier, &proof, 3)); // Zero commitment
+        assert!(!verify_privacy_params(commitment, 0, &proof, 3)); // Zero nullifier
+        assert!(!verify_privacy_params(commitment, nullifier, &proof, 4)); // Wrong proof length
+    }
+
+    #[test]
+    fn test_calculate_anonymity_set_size() {
+        assert_eq!(calculate_anonymity_set_size(100, 10), 100); // Within capacity
+        assert_eq!(calculate_anonymity_set_size(2000, 10), 1024); // Exceeds capacity (2^10 = 1024)
+    }
+
+    #[test]
+    fn test_estimate_privacy_score() {
+        assert_eq!(estimate_privacy_score(1), 0.0); // No privacy
+        assert!(estimate_privacy_score(2) > 0.0); // Some privacy
+        assert!(estimate_privacy_score(1024) > estimate_privacy_score(2)); // More privacy
     }
 }

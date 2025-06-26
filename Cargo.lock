@@ -39,12 +39,72 @@ dependencies = [
 ]
 
 [[package]]
+name = "alkanes"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
+dependencies = [
+ "alkanes-support",
+ "anyhow",
+ "bitcoin 0.32.6",
+ "byteorder",
+ "flate2",
+ "hex",
+ "hex_lit",
+ "js-sys",
+ "metashrew-core",
+ "metashrew-support",
+ "num",
+ "once_cell",
+ "ordinals 0.2.3",
+ "protobuf 3.7.2",
+ "protobuf-codegen 3.7.2",
+ "protoc-bin-vendored",
+ "protoc-rust",
+ "protorune",
+ "protorune-support",
+ "ruint",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "wasm-bindgen-test",
+ "wasmi",
+ "web-sys",
+]
+
+[[package]]
+name = "alkanes-macros"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
+dependencies = [
+ "ciborium",
+ "proc-macro2",
+ "quote",
+ "serde_json",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "alkanes-runtime"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
+dependencies = [
+ "alkanes-macros",
+ "alkanes-support",
+ "anyhow",
+ "bitcoin 0.32.6",
+ "metashrew-support",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+]
+
+[[package]]
 name = "alkanes-support"
-version = "0.5.2"
-source = "git+https://github.com/kungfuflex/alkanes-rs?branch=kungfuflex%2Fv0.5.2#72fcaff5576f93836f6c5513131d25ca0832a707"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
 dependencies = [
  "anyhow",
- "bitcoin",
+ "bitcoin 0.32.6",
  "flate2",
  "hex",
  "metashrew-support",
@@ -349,8 +409,8 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c8d66485a3a2ea485c1913c4572ce0256067a5377ac8c75c4960e1cda98605f"
 dependencies = [
- "bitcoin-internals",
- "bitcoin_hashes",
+ "bitcoin-internals 0.3.0",
+ "bitcoin_hashes 0.14.0",
 ]
 
 [[package]]
@@ -361,9 +421,48 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bech32"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d86b93f97252c47b41663388e6d155714a9d0c398b99f1005cbc5f978b29f445"
+
+[[package]]
+name = "bech32"
+version = "0.10.0-beta"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98f7eed2b2781a6f0b5c903471d48e15f56fb4e1165df8a9a2337fd1a59d45ea"
+
+[[package]]
+name = "bech32"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d965446196e3b7decd44aa7ee49e31d630118f90ef12f97900f262eb915c951d"
+
+[[package]]
+name = "bitcoin"
+version = "0.30.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1945a5048598e4189e239d3f809b19bdad4845c4b2ba400d304d2dcf26d2c462"
+dependencies = [
+ "bech32 0.9.1",
+ "bitcoin-private",
+ "bitcoin_hashes 0.12.0",
+ "hex_lit",
+ "secp256k1 0.27.0",
+]
+
+[[package]]
+name = "bitcoin"
+version = "0.31.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c85783c2fe40083ea54a33aa2f0ba58831d90fcd190f5bdc47e74e84d2a96ae"
+dependencies = [
+ "bech32 0.10.0-beta",
+ "bitcoin-internals 0.2.0",
+ "bitcoin_hashes 0.13.0",
+ "hex-conservative 0.1.2",
+ "hex_lit",
+ "secp256k1 0.28.2",
+]
 
 [[package]]
 name = "bitcoin"
@@ -372,15 +471,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ad8929a18b8e33ea6b3c09297b687baaa71fb1b97353243a3f1029fad5c59c5b"
 dependencies = [
  "base58ck",
- "bech32",
- "bitcoin-internals",
+ "bech32 0.11.0",
+ "bitcoin-internals 0.3.0",
  "bitcoin-io",
  "bitcoin-units",
- "bitcoin_hashes",
- "hex-conservative",
+ "bitcoin_hashes 0.14.0",
+ "hex-conservative 0.2.1",
  "hex_lit",
- "secp256k1",
+ "secp256k1 0.29.1",
 ]
+
+[[package]]
+name = "bitcoin-internals"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9425c3bf7089c983facbae04de54513cce73b41c7f9ff8c845b54e7bc64ebbfb"
 
 [[package]]
 name = "bitcoin-internals"
@@ -395,12 +500,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b47c4ab7a93edb0c7198c5535ed9b52b63095f4e9b45279c6736cec4b856baf"
 
 [[package]]
+name = "bitcoin-private"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73290177011694f38ec25e165d0387ab7ea749a4b81cd4c80dae5988229f7a57"
+
+[[package]]
 name = "bitcoin-units"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5285c8bcaa25876d07f37e3d30c303f2609179716e11d688f51e8f1fe70063e2"
 dependencies = [
- "bitcoin-internals",
+ "bitcoin-internals 0.3.0",
+]
+
+[[package]]
+name = "bitcoin_hashes"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d7066118b13d4b20b23645932dfb3a81ce7e29f95726c2036fa33cd7b092501"
+dependencies = [
+ "bitcoin-private",
+]
+
+[[package]]
+name = "bitcoin_hashes"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1930a4dabfebb8d7d9992db18ebe3ae2876f0a305fab206fd168df931ede293b"
+dependencies = [
+ "bitcoin-internals 0.2.0",
+ "hex-conservative 0.1.2",
 ]
 
 [[package]]
@@ -410,7 +540,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb18c03d0db0247e147a21a6faafd5a7eb851c743db062de72018b6b7e8e4d16"
 dependencies = [
  "bitcoin-io",
- "hex-conservative",
+ "hex-conservative 0.2.1",
 ]
 
 [[package]]
@@ -546,7 +676,7 @@ version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68578f196d2a33ff61b27fae256c3164f65e36382648e30666dde05b8cc9dfdf"
 dependencies = [
- "convert_case",
+ "convert_case 0.6.0",
  "nom",
  "pathdiff",
  "serde",
@@ -592,6 +722,12 @@ dependencies = [
  "quote",
  "unicode-xid",
 ]
+
+[[package]]
+name = "convert_case"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
 name = "convert_case"
@@ -724,6 +860,19 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
+version = "0.99.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
+dependencies = [
+ "convert_case 0.4.0",
+ "proc-macro2",
+ "quote",
+ "rustc_version 0.4.1",
+ "syn 2.0.104",
+]
+
+[[package]]
+name = "derive_more"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a9b99b9cbbe49445b21764dc0625032a89b145a2642e67603e1c936f5458d05"
@@ -779,6 +928,12 @@ dependencies = [
  "quote",
  "syn 2.0.104",
 ]
+
+[[package]]
+name = "downcast-rs"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
 
 [[package]]
 name = "drain_filter_polyfill"
@@ -1113,6 +1268,9 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+dependencies = [
+ "ahash",
+]
 
 [[package]]
 name = "hashbrown"
@@ -1125,6 +1283,12 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "hex-conservative"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "212ab92002354b4819390025006c897e8140934349e8635c9b077f47b4dcbd20"
 
 [[package]]
 name = "hex-conservative"
@@ -1350,6 +1514,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "indexmap-nostd"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e04e2fd2b8188ea827b32ef11de88377086d690286ab35747ef7f9bf3ccb590"
+
+[[package]]
 name = "interpolator"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1493,7 +1663,7 @@ checksum = "4b13bc3db70715cd8218c4535a5af3ae3c0e5fea6f018531fc339377b36bc0e0"
 dependencies = [
  "attribute-derive",
  "cfg-if",
- "convert_case",
+ "convert_case 0.6.0",
  "html-escape",
  "itertools 0.12.1",
  "leptos_hot_reload",
@@ -1677,13 +1847,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a282da65faaf38286cf3be983213fcf1d2e2a58700e808f83f4ea9a4804bc0"
 
 [[package]]
-name = "metashrew-support"
+name = "metashrew-core"
 version = "9.0.0"
-source = "git+https://github.com/sandshrewmetaprotocols/metashrew#291ea4e7ce322633c91d0a1e02ad39d8c34725cf"
+source = "git+https://github.com/sandshrewmetaprotocols/metashrew#d61d9c2aa1a3be674d0d0cc32e8dbadb1037b79c"
 dependencies = [
  "anyhow",
- "bech32",
- "bitcoin",
+ "bitcoin 0.31.2",
+ "bytes",
+ "cfg-if",
+ "hex",
+ "metashrew-support",
+ "ordinals 0.0.8",
+ "protobuf 3.7.2",
+ "protobuf-codegen 3.7.2",
+ "protoc-bin-vendored",
+ "protoc-rust",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+]
+
+[[package]]
+name = "metashrew-support"
+version = "9.0.0"
+source = "git+https://github.com/sandshrewmetaprotocols/metashrew#d61d9c2aa1a3be674d0d0cc32e8dbadb1037b79c"
+dependencies = [
+ "anyhow",
+ "bech32 0.11.0",
+ "bitcoin 0.32.6",
  "flate2",
  "hex",
  "protobuf 3.7.2",
@@ -1718,6 +1908,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "multi-stash"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "685a9ac4b61f4e728e1d2c6a7844609c16527aeb5e6c865915c08e619c16410f"
+
+[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1728,12 +1924,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "num"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35bd024e8b2ff75562e5f34e7f4905839deb4b22955ef5e73d2fea1b9813cb23"
+dependencies = [
+ "num-bigint",
+ "num-complex",
+ "num-integer",
+ "num-iter",
+ "num-rational",
+ "num-traits",
+]
+
+[[package]]
 name = "num-bigint"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
 dependencies = [
  "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73f88a1307638156682bada9d7604135552957b7818057dcef22705b4d509495"
+dependencies = [
  "num-traits",
 ]
 
@@ -1749,6 +1968,28 @@ version = "0.1.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
 dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-iter"
+version = "0.1.45"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1429034a0490724d0075ebb2bc9e875d6503c3cf69e235a8941aa757d83ef5bf"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
+dependencies = [
+ "num-bigint",
+ "num-integer",
  "num-traits",
 ]
 
@@ -1789,11 +2030,24 @@ checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "ordinals"
-version = "0.5.2"
-source = "git+https://github.com/kungfuflex/alkanes-rs?branch=kungfuflex%2Fv0.5.2#72fcaff5576f93836f6c5513131d25ca0832a707"
+version = "0.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f69dc8f090e996b63e1f96972f0d619f497c9545464c7bddf65e42d38576b3f3"
 dependencies = [
- "bitcoin",
- "derive_more",
+ "bitcoin 0.30.2",
+ "derive_more 0.99.20",
+ "serde",
+ "serde_with",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "ordinals"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
+dependencies = [
+ "bitcoin 0.32.6",
+ "derive_more 1.0.0",
  "serde",
  "serde_with",
  "thiserror 1.0.69",
@@ -2231,16 +2485,38 @@ dependencies = [
 ]
 
 [[package]]
-name = "protorune-support"
-version = "0.5.2"
-source = "git+https://github.com/kungfuflex/alkanes-rs?branch=kungfuflex%2Fv0.5.2#72fcaff5576f93836f6c5513131d25ca0832a707"
+name = "protorune"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
 dependencies = [
  "anyhow",
- "bech32",
- "bitcoin",
+ "bitcoin 0.32.6",
+ "byteorder",
+ "hex",
+ "metashrew-core",
+ "metashrew-support",
+ "once_cell",
+ "ordinals 0.2.3",
+ "protobuf 3.7.2",
+ "protorune-support",
+ "ruint",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-test",
+]
+
+[[package]]
+name = "protorune-support"
+version = "0.2.3"
+source = "git+https://github.com/kungfuflex/alkanes-rs#fb2bcb3041e7930f664792450146aa2dad5389a8"
+dependencies = [
+ "anyhow",
+ "bech32 0.11.0",
+ "bitcoin 0.32.6",
  "hex",
  "metashrew-support",
- "ordinals",
+ "ordinals 0.2.3",
  "protobuf 3.7.2",
  "protobuf-codegen 3.7.2",
  "protoc-bin-vendored",
@@ -2577,13 +2853,52 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "secp256k1"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25996b82292a7a57ed3508f052cfff8640d38d32018784acd714758b43da9c8f"
+dependencies = [
+ "bitcoin_hashes 0.12.0",
+ "rand 0.8.5",
+ "secp256k1-sys 0.8.1",
+]
+
+[[package]]
+name = "secp256k1"
+version = "0.28.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d24b59d129cdadea20aea4fb2352fa053712e5d713eee47d700cd4b2bc002f10"
+dependencies = [
+ "bitcoin_hashes 0.13.0",
+ "secp256k1-sys 0.9.2",
+]
+
+[[package]]
+name = "secp256k1"
 version = "0.29.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9465315bc9d4566e1724f0fffcbcc446268cb522e60f9a27bcded6b19c108113"
 dependencies = [
- "bitcoin_hashes",
+ "bitcoin_hashes 0.14.0",
  "rand 0.8.5",
- "secp256k1-sys",
+ "secp256k1-sys 0.10.1",
+]
+
+[[package]]
+name = "secp256k1-sys"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "70a129b9e9efbfb223753b9163c4ab3b13cff7fd9c7f010fbac25ab4099fa07e"
+dependencies = [
+ "cc",
+]
+
+[[package]]
+name = "secp256k1-sys"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5d1746aae42c19d583c3c1a8c646bfad910498e2051c551a7f2e3c0c9fbb7eb"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -2784,7 +3099,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "faaaf648c6967aef78177c0610478abb5a3455811f401f3c62d10ae9bd3901a1"
 dependencies = [
  "const_format",
- "convert_case",
+ "convert_case 0.6.0",
  "proc-macro2",
  "quote",
  "syn 2.0.104",
@@ -2841,6 +3156,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
+name = "spin"
+version = "0.9.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2851,6 +3172,17 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "string-interner"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c6a0d765f5807e98a091107bae0a56ea3799f66a5de47b2c84c94a39c09974e"
+dependencies = [
+ "cfg-if",
+ "hashbrown 0.14.5",
+ "serde",
+]
 
 [[package]]
 name = "strsim"
@@ -3353,6 +3685,63 @@ dependencies = [
 ]
 
 [[package]]
+name = "wasmi"
+version = "0.37.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ebac3907ef70580746bad374e3185830c36c68b013ce34af343e834d69d7528"
+dependencies = [
+ "arrayvec",
+ "multi-stash",
+ "smallvec",
+ "spin",
+ "wasmi_collections",
+ "wasmi_core",
+ "wasmi_ir",
+ "wasmparser-nostd",
+]
+
+[[package]]
+name = "wasmi_collections"
+version = "0.37.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b427c78e0be90952245e417eb1a842e8287f08de3c5e520b344dcf1e8249368"
+dependencies = [
+ "ahash",
+ "hashbrown 0.14.5",
+ "string-interner",
+]
+
+[[package]]
+name = "wasmi_core"
+version = "0.37.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28011433a4a7e4b620daa1dde2c9711fb508422fc11d82ac78ed8f5234d7e1c4"
+dependencies = [
+ "downcast-rs",
+ "libm",
+ "num-traits",
+ "paste",
+]
+
+[[package]]
+name = "wasmi_ir"
+version = "0.37.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18465d4c11b8eb5428d9f1abae93388381553b6e72e3db04c82e988c4b8f5fe0"
+dependencies = [
+ "wasmi_core",
+]
+
+[[package]]
+name = "wasmparser-nostd"
+version = "0.100.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5a015fe95f3504a94bb1462c717aae75253e39b9dd6c3fb1062c934535c64aa"
+dependencies = [
+ "indexmap-nostd",
+]
+
+[[package]]
 name = "web-sys"
 version = "0.3.77"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3755,12 +4144,20 @@ dependencies = [
 name = "zkane"
 version = "0.1.0"
 dependencies = [
+ "alkanes",
  "alkanes-support",
  "anyhow",
- "bitcoin",
+ "bitcoin 0.32.6",
+ "flate2",
  "getrandom 0.2.16",
  "hex",
+ "hex_lit",
+ "metashrew-core",
+ "metashrew-support",
+ "ordinals 0.2.3",
  "protobuf 3.7.2",
+ "protorune",
+ "protorune-support",
  "serde",
  "serde_json",
  "sha2",
@@ -3778,7 +4175,7 @@ version = "0.1.0"
 dependencies = [
  "alkanes-support",
  "anyhow",
- "bitcoin",
+ "bitcoin 0.32.6",
  "hex",
  "hex_lit",
  "rand 0.8.5",
@@ -3824,6 +4221,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "zkane-factory"
+version = "0.1.0"
+dependencies = [
+ "alkanes-macros",
+ "alkanes-runtime",
+ "alkanes-support",
+ "anyhow",
+ "bitcoin 0.32.6",
+ "getrandom 0.2.16",
+ "hex",
+ "hex_lit",
+ "metashrew-support",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "wasm-bindgen-test",
+ "zkane-common",
+]
+
+[[package]]
 name = "zkane-frontend"
 version = "0.1.0"
 dependencies = [
@@ -3851,4 +4268,26 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-bindgen-test",
  "web-sys",
+]
+
+[[package]]
+name = "zkane-pool"
+version = "0.1.0"
+dependencies = [
+ "alkanes-macros",
+ "alkanes-runtime",
+ "alkanes-support",
+ "anyhow",
+ "bitcoin 0.32.6",
+ "getrandom 0.2.16",
+ "hex",
+ "hex_lit",
+ "metashrew-support",
+ "once_cell",
+ "serde",
+ "serde_json",
+ "wasm-bindgen-test",
+ "zkane-common",
+ "zkane-core",
+ "zkane-crypto",
 ]
