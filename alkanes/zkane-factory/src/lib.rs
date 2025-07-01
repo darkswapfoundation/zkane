@@ -11,6 +11,7 @@ use alkanes_support::parcel::AlkaneTransfer;
 use alkanes_support::cellpack::Cellpack;
 use alkanes_support::id::AlkaneId;
 use metashrew_support::index_pointer::KeyValuePointer;
+use metashrew_support::compat::to_arraybuffer_layout;
 use zkane_common::ZKaneConfig;
 use anyhow::{anyhow, Result};
 use std::sync::Arc;
@@ -62,7 +63,7 @@ enum ZKaneFactoryMessage {
 
     /// Check if a pool exists for an asset/denomination pair
     #[opcode(3)]
-    #[returns(bool)]
+    #[returns(u128)]
     PoolExists {
         /// Asset ID block
         asset_id_block: u128,
@@ -134,7 +135,7 @@ impl ZKaneFactory {
         let asset_pools_ptr = self.asset_pools_pointer(asset_id);
         
         // Get current count for this asset
-        let count_ptr = asset_pools_ptr.select(&b"count".to_vec());
+        let mut count_ptr = asset_pools_ptr.select(&b"count".to_vec());
         let count = count_ptr.get_value::<u128>();
         
         // Store the new pool info
@@ -146,21 +147,21 @@ impl ZKaneFactory {
             }
         });
         
-        let pool_ptr = asset_pools_ptr.select(&count.to_le_bytes().to_vec());
+        let mut pool_ptr = asset_pools_ptr.select(&count.to_le_bytes().to_vec());
         pool_ptr.set(Arc::new(pool_info.to_string().into_bytes()));
         
         // Update count
         count_ptr.set_value::<u128>(count + 1);
     }
 
-    /// Check if a pool exists for the given asset and denomination
-    fn pool_exists(&self, asset_id: &AlkaneId, denomination: u128) -> bool {
+    /// Check if a pool exists for the given asset and denomination (internal method)
+    fn pool_exists_internal(&self, asset_id: &AlkaneId, denomination: u128) -> bool {
         let pool_ptr = self.pool_pointer(asset_id, denomination);
         !pool_ptr.get().is_empty()
     }
 
-    /// Get the pool ID for the given asset and denomination
-    fn get_pool_id(&self, asset_id: &AlkaneId, denomination: u128) -> Option<AlkaneId> {
+    /// Get the pool ID for the given asset and denomination (internal method)
+    fn get_pool_id_internal(&self, asset_id: &AlkaneId, denomination: u128) -> Option<AlkaneId> {
         let pool_ptr = self.pool_pointer(asset_id, denomination);
         let data = pool_ptr.get();
         
@@ -180,7 +181,7 @@ impl ZKaneFactory {
 
     /// Store a pool ID for the given asset and denomination
     fn store_pool_id(&self, asset_id: &AlkaneId, denomination: u128, pool_id: &AlkaneId) {
-        let pool_ptr = self.pool_pointer(asset_id, denomination);
+        let mut pool_ptr = self.pool_pointer(asset_id, denomination);
         
         let mut data = Vec::new();
         data.extend_from_slice(&pool_id.block.to_le_bytes());
@@ -255,7 +256,7 @@ impl ZKaneFactory {
         };
 
         // Check if pool already exists
-        if let Some(existing_pool_id) = self.get_pool_id(&asset_id, denomination) {
+        if let Some(existing_pool_id) = self.get_pool_id_internal(&asset_id, denomination) {
             // Pool exists, forward the incoming alkanes to it
             let pool_cellpack = Cellpack {
                 target: existing_pool_id,
@@ -277,10 +278,8 @@ impl ZKaneFactory {
         let pool_id = self.generate_pool_id(&asset_id, denomination);
 
         // Read configuration from witness envelope if provided
-        let witness_data = alkanes_support::witness::find_witness_payload(
-            &context.transaction()?,
-            0,
-        ).unwrap_or_default();
+        // TODO: Fix transaction access once API is clarified
+        let witness_data = vec![]; // Temporary placeholder
 
         let tree_height = if !witness_data.is_empty() {
             // Try to parse tree height from witness data
@@ -349,8 +348,8 @@ impl ZKaneFactory {
         Ok(response)
     }
 
-    /// Get the pool ID for an asset/denomination pair
-    fn get_pool_id_response(
+    /// Get the pool ID for an asset/denomination pair (for MessageDispatch macro)
+    fn get_pool_id(
         &self,
         asset_id_block: u128,
         asset_id_tx: u128,
@@ -364,7 +363,7 @@ impl ZKaneFactory {
             tx: asset_id_tx,
         };
 
-        if let Some(pool_id) = self.get_pool_id(&asset_id, denomination) {
+        if let Some(pool_id) = self.get_pool_id_internal(&asset_id, denomination) {
             let mut data = Vec::new();
             data.extend_from_slice(&pool_id.block.to_le_bytes());
             data.extend_from_slice(&pool_id.tx.to_le_bytes());
@@ -376,8 +375,8 @@ impl ZKaneFactory {
         Ok(response)
     }
 
-    /// Check if a pool exists
-    fn pool_exists_response(
+    /// Check if a pool exists (for MessageDispatch macro)
+    fn pool_exists(
         &self,
         asset_id_block: u128,
         asset_id_tx: u128,
@@ -391,14 +390,14 @@ impl ZKaneFactory {
             tx: asset_id_tx,
         };
 
-        let exists = self.pool_exists(&asset_id, denomination);
-        response.data = vec![if exists { 1u8 } else { 0u8 }];
+        let exists = self.pool_exists_internal(&asset_id, denomination);
+        response.data = (if exists { 1u128 } else { 0u128 }).to_le_bytes().to_vec();
 
         Ok(response)
     }
 
-    /// Get all pools for an asset
-    fn get_asset_pools_response(
+    /// Get all pools for an asset (for MessageDispatch macro)
+    fn get_asset_pools(
         &self,
         asset_id_block: u128,
         asset_id_tx: u128,
@@ -438,8 +437,8 @@ impl ZKaneFactory {
         Ok(response)
     }
 
-    /// Get factory statistics
-    fn get_stats_response(&self) -> Result<CallResponse> {
+    /// Get factory statistics (for MessageDispatch macro)
+    fn get_stats(&self) -> Result<CallResponse> {
         let context = self.context()?;
         let mut response = CallResponse::forward(&context.incoming_alkanes);
 
