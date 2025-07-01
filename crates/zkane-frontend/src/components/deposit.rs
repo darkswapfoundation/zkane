@@ -218,7 +218,7 @@ pub fn DepositResult(
                                 </div>
                                 
                                 <div class="note-display">
-                                    <label>"Your Deposit Note (Save This Securely!):"</label>
+                                    <label class="note-label">"Your Deposit Note (Save This Securely!):"</label>
                                     <textarea
                                         class="note-textarea"
                                         readonly
