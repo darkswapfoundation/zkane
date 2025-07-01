@@ -49,7 +49,7 @@
 - **Error Handling**: Proper error states and loading indicators
 
 ## 🚀 Current Status
-The ZKane frontend is **fully functional and ready for use**. The application provides:
+The ZKane frontend is **fully functional and ready for deployment**. The application provides:
 - Professional, modern UI with beautiful gradients
 - Complete privacy pool workflow (deposit → withdraw)
 - Real-time network statistics
