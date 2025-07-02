@@ -324,8 +324,12 @@ pub fn NoteCard(
                                 match storage_service_delete.delete_deposit_note(&note_for_delete.commitment) {
                                     Ok(_) => {
                                         notification_service_delete.success("Deleted", "Deposit note deleted successfully");
-                                        // Trigger page refresh
-                                        web_sys::window().unwrap().location().reload().unwrap();
+                                        // Trigger page refresh safely
+                                        if let Some(window) = web_sys::window() {
+                                            if let Ok(Some(location)) = window.location().href() {
+                                                let _ = window.location().reload();
+                                            }
+                                        }
                                     },
                                     Err(e) => {
                                         notification_service_delete.error("Delete Failed", &format!("Failed to delete note: {:?}", e));
