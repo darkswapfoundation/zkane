@@ -240,7 +240,7 @@ fn WalletSelectionModal(show_wallet_modal: RwSignal<bool>) -> impl IntoView {
 #[component]
 pub fn WithdrawComponent() -> impl IntoView {
     let zkane_service = expect_context::<ZKaneService>();
-    let alkanes_service = expect_context::<AlkanesService>();
+    let _alkanes_service = expect_context::<AlkanesService>();
     let notification_service = expect_context::<NotificationService>();
     
     // State
@@ -250,25 +250,51 @@ pub fn WithdrawComponent() -> impl IntoView {
     let (parsed_note, set_parsed_note) = create_signal(None::<DepositNote>);
     let (generated_proof, set_generated_proof) = create_signal(None::<WithdrawalProof>);
 
-    // Parse note when JSON changes
+    // Clone services for different closures
+    let notification_service_prefill = notification_service.clone();
     let notification_service_for_parse = notification_service.clone();
-    let parse_note = move || {
-        let json = deposit_note_json.get();
-        if !json.is_empty() {
-            match serde_json::from_str::<DepositNote>(&json) {
-                Ok(note) => {
-                    set_parsed_note.set(Some(note));
-                    notification_service_for_parse.info("Note Parsed", "Deposit note loaded successfully");
-                },
-                Err(_) => {
-                    set_parsed_note.set(None);
-                    notification_service_for_parse.error("Invalid Note", "Failed to parse deposit note JSON");
+
+    // Check for pre-filled note from session storage (from history page)
+    create_effect(move |_| {
+        if let Some(window) = web_sys::window() {
+            if let Ok(Some(storage)) = window.session_storage() {
+                if let Ok(Some(prefill_note)) = storage.get_item("zkane_prefill_note") {
+                    set_deposit_note_json.set(prefill_note);
+                    // Clear the session storage item after using it
+                    let _ = storage.remove_item("zkane_prefill_note");
+                    notification_service_prefill.info("Note Loaded", "Deposit note loaded from history");
                 }
             }
-        } else {
-            set_parsed_note.set(None);
+        }
+    });
+
+    // Parse note when JSON changes
+    let parse_note = {
+        let notification_service_for_parse = notification_service_for_parse.clone();
+        move || {
+            let json = deposit_note_json.get();
+            if !json.is_empty() {
+                match serde_json::from_str::<DepositNote>(&json) {
+                    Ok(note) => {
+                        set_parsed_note.set(Some(note));
+                        notification_service_for_parse.info("Note Parsed", "Deposit note loaded successfully");
+                    },
+                    Err(_) => {
+                        set_parsed_note.set(None);
+                        notification_service_for_parse.error("Invalid Note", "Failed to parse deposit note JSON");
+                    }
+                }
+            } else {
+                set_parsed_note.set(None);
+            }
         }
     };
+
+    // Parse note when component loads or note changes
+    let parse_note_effect = parse_note.clone();
+    create_effect(move |_| {
+        parse_note_effect();
+    });
 
     // Withdrawal action
     let withdraw_action = Action::new(move |_: &()| {
@@ -450,73 +476,6 @@ pub fn PoolListComponent() -> impl IntoView {
     }
 }
 
-#[component]
-pub fn HistoryComponent() -> impl IntoView {
-    let storage_service = expect_context::<StorageService>();
-    let notification_service = expect_context::<NotificationService>();
-    
-    // Load saved deposit notes
-    let saved_notes = Resource::new(
-        || (),
-        move |_| {
-            let storage_service = storage_service.clone();
-            async move {
-                storage_service.load_deposit_notes()
-            }
-        },
-    );
-
-    view! {
-        <div class="history-component">
-            <div class="history-header">
-                <h3>"Saved Deposit Notes"</h3>
-                <button 
-                    class="btn btn-secondary"
-                    on:click=move |_| {
-                        saved_notes.refetch();
-                        notification_service.info("Refreshed", "Deposit notes refreshed");
-                    }
-                >
-                    "Refresh"
-                </button>
-            </div>
-            
-            <Suspense fallback=|| view! { <LoadingSpinner message="Loading history..."/> }>
-                {move || {
-                    saved_notes.get().map(|result| -> leptos::View {
-                        match result {
-                            Ok(notes) => {
-                                if notes.is_empty() {
-                                    view! {
-                                        <EmptyState
-                                            icon="📜"
-                                            title="No History"
-                                            message="You haven't created any deposit notes yet"
-                                        />
-                                    }.into_view()
-                                } else {
-                                    view! {
-                                        <div class="notes-list">
-                                            {notes.into_iter().map(|note| {
-                                                view! { <NoteCard note=note/> }
-                                            }).collect::<Vec<_>>()}
-                                        </div>
-                                    }.into_view()
-                                }
-                            },
-                            Err(e) => view! {
-                                <ErrorState
-                                    title="Failed to Load History"
-                                    message=format!("Error: {:?}", e)
-                                />
-                            }.into_view()
-                        }
-                    })
-                }}
-            </Suspense>
-        </div>
-    }
-}
 
 #[component]
 pub fn SettingsComponent() -> impl IntoView {

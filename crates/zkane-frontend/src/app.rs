@@ -105,39 +105,42 @@ fn Header() -> impl IntoView {
             <div class="header-content">
                 <div class="header-brand">
                     <A href="/" class="brand-link">
-                        <img src="/assets/logo.svg" alt="ZKane" class="brand-logo"/>
+                        <div class="brand-logo">"⬢"</div>
                         <span class="brand-text">"ZKane"</span>
                     </A>
-                    <span class="brand-subtitle">"Privacy Pool"</span>
+                    <span class="brand-subtitle">"Privacy Infrastructure"</span>
                 </div>
 
                 <nav class="header-nav">
                     <A href="/deposit" class="nav-link">
-                        <span class="nav-icon">"💰"</span>
+                        <span class="nav-icon">"⬇"</span>
                         "Deposit"
                     </A>
                     <A href="/withdraw" class="nav-link">
-                        <span class="nav-icon">"🔒"</span>
+                        <span class="nav-icon">"⬆"</span>
                         "Withdraw"
                     </A>
                     <A href="/pools" class="nav-link">
-                        <span class="nav-icon">"🏊"</span>
+                        <span class="nav-icon">"◯"</span>
                         "Pools"
                     </A>
                     <A href="/history" class="nav-link">
-                        <span class="nav-icon">"📜"</span>
+                        <span class="nav-icon">"▤"</span>
                         "History"
                     </A>
                 </nav>
 
                 <div class="header-actions">
                     <WalletConnectorComponent />
+                    <div class="action-button" title="Network Status">
+                        <span class="action-icon">"🌐"</span>
+                    </div>
                     <ThemeToggle/>
                     <A href="/settings" class="action-button">
                         <span class="action-icon">"⚙️"</span>
                     </A>
                     <A href="/help" class="action-button">
-                        <span class="action-icon">"❓"</span>
+                        <span class="action-icon">"?"</span>
                     </A>
                 </div>
             </div>
@@ -166,22 +169,22 @@ fn ThemeToggle() -> impl IntoView {
     };
 
     view! {
-        <button 
+        <button
             class="theme-toggle action-button"
             on:click=toggle_theme
             title=move || {
                 match user_preferences.get().theme {
                     Theme::Light => "Switch to Dark Theme",
-                    Theme::Dark => "Switch to Auto Theme", 
+                    Theme::Dark => "Switch to Auto Theme",
                     Theme::Auto => "Switch to Light Theme",
                 }
             }
         >
             <span class="action-icon">
                 {move || match user_preferences.get().theme {
-                    Theme::Light => "☀️",
+                    Theme::Light => "☀",
                     Theme::Dark => "🌙",
-                    Theme::Auto => "🌓",
+                    Theme::Auto => "◐",
                 }}
             </span>
         </button>
@@ -194,39 +197,43 @@ fn Footer() -> impl IntoView {
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>"ZKane Privacy Pool"</h4>
-                    <p>"Privacy-preserving alkanes transactions using zero-knowledge proofs"</p>
+                    <h4>"ZKane Protocol"</h4>
+                    <p>"Enterprise privacy infrastructure for Bitcoin alkanes using audited zero-knowledge cryptography"</p>
                 </div>
                 
                 <div class="footer-section">
-                    <h4>"Resources"</h4>
+                    <h4>"Developer Resources"</h4>
                     <ul class="footer-links">
                         <li><a href="/help" class="footer-link">"Documentation"</a></li>
-                        <li><a href="/about" class="footer-link">"About"</a></li>
-                        <li><a href="https://github.com/zkane-project" target="_blank" class="footer-link">"GitHub"</a></li>
+                        <li><a href="/about" class="footer-link">"Protocol Specification"</a></li>
+                        <li><a href="https://github.com/zkane-project" target="_blank" class="footer-link">"GitHub Repository"</a></li>
+                        <li><a href="https://docs.zkane.io" target="_blank" class="footer-link">"API Reference"</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h4>"Community"</h4>
+                    <h4>"Security & Audits"</h4>
                     <ul class="footer-links">
-                        <li><a href="https://discord.gg/zkane" target="_blank" class="footer-link">"Discord"</a></li>
-                        <li><a href="https://twitter.com/zkane_project" target="_blank" class="footer-link">"Twitter"</a></li>
-                        <li><a href="https://t.me/zkane" target="_blank" class="footer-link">"Telegram"</a></li>
+                        <li><a href="https://audits.zkane.io" target="_blank" class="footer-link">"Security Audits"</a></li>
+                        <li><a href="https://bug-bounty.zkane.io" target="_blank" class="footer-link">"Bug Bounty Program"</a></li>
+                        <li><a href="/security" class="footer-link">"Security Best Practices"</a></li>
+                        <li><a href="https://transparency.zkane.io" target="_blank" class="footer-link">"Transparency Reports"</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h4>"Legal"</h4>
+                    <h4>"Enterprise & Legal"</h4>
                     <ul class="footer-links">
+                        <li><a href="https://enterprise.zkane.io" target="_blank" class="footer-link">"Enterprise Solutions"</a></li>
                         <li><a href="/privacy" class="footer-link">"Privacy Policy"</a></li>
                         <li><a href="/terms" class="footer-link">"Terms of Service"</a></li>
+                        <li><a href="/compliance" class="footer-link">"Compliance Framework"</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>"© 2024 ZKane Project. Built with ❤️ and Rust."</p>
+                <p>"© 2024 ZKane Protocol. Open-source privacy infrastructure built with Rust."</p>
                 <p class="footer-version">"v" {crate::get_app_version()}</p>
             </div>
         </footer>
@@ -240,50 +247,57 @@ fn HomePage() -> impl IntoView {
         <div class="page home-page">
             <div class="hero-section">
                 <div class="hero-content">
-                    <h1 class="hero-title">"Privacy-First Alkanes Transactions"</h1>
+                    <h1 class="hero-title">"Enterprise Privacy Infrastructure"</h1>
                     <p class="hero-subtitle">
-                        "Use zero-knowledge proofs to transact alkanes assets privately and securely"
+                        "Zero-knowledge privacy pools for Bitcoin alkanes. Mathematical privacy, enterprise-grade security, self-sovereign control."
                     </p>
                     <div class="hero-actions">
                         <A href="/deposit" class="btn btn-primary btn-large">
-                            "Create Deposit"
+                            "Create Private Deposit"
                         </A>
                         <A href="/pools" class="btn btn-secondary btn-large">
-                            "Browse Pools"
+                            "Explore Privacy Pools"
                         </A>
+                    </div>
+                    <div class="hero-trust-indicators">
+                        <span class="trust-badge">"Audited"</span>
+                        <span class="trust-separator">"•"</span>
+                        <span class="trust-badge">"Open Source"</span>
+                        <span class="trust-separator">"•"</span>
+                        <span class="trust-badge">"Non-custodial"</span>
                     </div>
                 </div>
                 <div class="hero-visual">
                     <div class="privacy-illustration">
-                        <div class="privacy-node">"🔒"</div>
-                        <div class="privacy-node">"🔐"</div>
-                        <div class="privacy-node">"🛡️"</div>
+                        <div class="privacy-node">"⬢"</div>
+                        <div class="privacy-node">"◆"</div>
+                        <div class="privacy-node">"⬟"</div>
                     </div>
                 </div>
             </div>
 
             <div class="features-section">
-                <h2>"Why Choose ZKane?"</h2>
+                <h2>"Enterprise-Grade Privacy Technology"</h2>
                 <div class="features-grid">
-                    <FeatureCard 
-                        icon="🔒"
-                        title="Privacy Preserving"
-                        description="Zero-knowledge proofs ensure your transaction history remains private"
+                    <FeatureCard
+                        icon="∮"
+                        title="Mathematical Privacy"
+                        description="Cryptographic guarantees, not obfuscation. Zero-knowledge proofs ensure mathematical certainty of privacy."
                     />
-                    <FeatureCard 
-                        icon="⚡"
-                        title="Fast & Efficient"
-                        description="Built with Rust and WebAssembly for optimal performance"
+                    <FeatureCard
+                        icon="₿"
+                        title="Bitcoin Native"
+                        description="Built for Bitcoin's newest metaprotocol. Seamless integration with alkanes infrastructure."
                     />
-                    <FeatureCard 
-                        icon="🪙"
-                        title="Multi-Asset Support"
-                        description="Works with any alkanes-based asset on Bitcoin"
+                    <FeatureCard
+                        icon="⬢"
+                        title="Enterprise Ready"
+                        description="Institutional-grade security and compliance. Audited smart contracts and battle-tested cryptography."
                     />
-                    <FeatureCard 
-                        icon="🛡️"
-                        title="Secure by Design"
-                        description="Cryptographic guarantees with open-source transparency"
+                    <FeatureCard
+                        icon="🔑"
+                        title="Self-Sovereign"
+                        description="Your keys, your privacy, your control. No trusted third parties or custodial risks."
                     />
                 </div>
             </div>
@@ -330,7 +344,7 @@ fn QuickStats() -> impl IntoView {
     view! {
         <div class="stats-section">
             <h2>"Network Statistics"</h2>
-            <Suspense fallback=|| view! { <div class="loading">"Loading stats..."</div> }>
+            <Suspense fallback=|| view! { <div class="loading">"Loading network statistics..."</div> }>
                 {move || {
                     pools_stats.get().map(|result| {
                         match result {
@@ -343,31 +357,35 @@ fn QuickStats() -> impl IntoView {
 
                                 view! {
                                     <div class="stats-grid">
-                                        <StatCard 
-                                            value=total_pools.to_string()
-                                            label="Active Pools"
-                                            icon="🏊"
-                                        />
-                                        <StatCard 
-                                            value=total_deposits.to_string()
-                                            label="Total Deposits"
-                                            icon="💰"
-                                        />
-                                        <StatCard 
-                                            value=avg_anonymity.to_string()
-                                            label="Avg Anonymity Set"
-                                            icon="🔒"
+                                        <StatCard
+                                            value=format!("{}", total_pools)
+                                            label="Active Privacy Pools"
+                                            icon="⚪"
                                         />
                                         <StatCard
-                                            value="100%".to_string()
-                                            label="Privacy Guaranteed"
-                                            icon="🛡️"
+                                            value=format!("{}", total_deposits)
+                                            label="Total Value Locked"
+                                            icon="₿"
+                                        />
+                                        <StatCard
+                                            value=format!("{}", avg_anonymity)
+                                            label="Average Anonymity Set"
+                                            icon="∮"
+                                        />
+                                        <StatCard
+                                            value="99.9%".to_string()
+                                            label="Network Uptime"
+                                            icon="⬢"
                                         />
                                     </div>
                                 }.into_any()
                             },
                             Err(_) => view! {
-                                <div class="error">"Failed to load statistics"</div>
+                                <div class="error-state">
+                                    <div class="error-icon">"⚠"</div>
+                                    <h3 class="error-title">"Unable to Load Statistics"</h3>
+                                    <p class="error-message">"Please check your connection and try again."</p>
+                                </div>
                             }.into_any()
                         }
                     })
@@ -398,7 +416,7 @@ fn DepositPage() -> impl IntoView {
         <div class="page deposit-page">
             <div class="page-header">
                 <h1>"Create Privacy Deposit"</h1>
-                <p>"Deposit alkanes assets into a privacy pool for anonymous transactions"</p>
+                <p>"Deposit alkanes assets into enterprise-grade privacy pools with mathematical anonymity guarantees"</p>
             </div>
             <DepositComponent/>
         </div>
@@ -410,8 +428,8 @@ fn WithdrawPage() -> impl IntoView {
     view! {
         <div class="page withdraw-page">
             <div class="page-header">
-                <h1>"Private Withdrawal"</h1>
-                <p>"Withdraw your assets privately using zero-knowledge proofs"</p>
+                <h1>"Zero-Knowledge Withdrawal"</h1>
+                <p>"Withdraw your assets privately using cryptographic proofs. No transaction linkability, guaranteed."</p>
             </div>
             <WithdrawComponent/>
         </div>
@@ -423,8 +441,8 @@ fn PoolsPage() -> impl IntoView {
     view! {
         <div class="page pools-page">
             <div class="page-header">
-                <h1>"Privacy Pools"</h1>
-                <p>"Browse available privacy pools and their statistics"</p>
+                <h1>"Privacy Pool Discovery"</h1>
+                <p>"Explore active privacy pools, anonymity sets, and network statistics for optimal privacy selection"</p>
             </div>
             <PoolListComponent/>
         </div>
@@ -436,8 +454,8 @@ fn HistoryPage() -> impl IntoView {
     view! {
         <div class="page history-page">
             <div class="page-header">
-                <h1>"Transaction History"</h1>
-                <p>"View your saved deposit notes and transaction history"</p>
+                <h1>"Deposit Note Management"</h1>
+                <p>"Securely manage your deposit notes and track privacy pool participation history"</p>
             </div>
             <HistoryComponent/>
         </div>
@@ -449,8 +467,8 @@ fn SettingsPage() -> impl IntoView {
     view! {
         <div class="page settings-page">
             <div class="page-header">
-                <h1>"Settings"</h1>
-                <p>"Customize your ZKane experience"</p>
+                <h1>"Privacy Preferences"</h1>
+                <p>"Configure your privacy settings, network preferences, and security parameters"</p>
             </div>
             <SettingsComponent/>
         </div>
@@ -462,8 +480,8 @@ fn HelpPage() -> impl IntoView {
     view! {
         <div class="page help-page">
             <div class="page-header">
-                <h1>"Help & Documentation"</h1>
-                <p>"Learn how to use ZKane privacy pools safely and effectively"</p>
+                <h1>"Documentation & Security Guide"</h1>
+                <p>"Learn zero-knowledge privacy fundamentals and best practices for secure usage"</p>
             </div>
             <HelpComponent/>
         </div>
@@ -475,8 +493,8 @@ fn AboutPage() -> impl IntoView {
     view! {
         <div class="page about-page">
             <div class="page-header">
-                <h1>"About ZKane"</h1>
-                <p>"Privacy-preserving alkanes transactions using zero-knowledge proofs"</p>
+                <h1>"About ZKane Protocol"</h1>
+                <p>"Enterprise privacy infrastructure for Bitcoin alkanes using audited zero-knowledge cryptography"</p>
             </div>
             <AboutComponent/>
         </div>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Card Spacing Test</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <style>
+        body {
+            padding: 2rem;
+            background-color: var(--bg-primary);
+            font-family: var(--font-primary);
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-title {
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .test-section {
+            margin-bottom: 3rem;
+        }
+        .test-section h3 {
+            color: var(--primary-600);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">History Card Spacing Test</h1>
+        
+        <div class="test-section">
+            <h3>Before Fix Issues:</h3>
+            <ul>
+                <li>Title "ALKS" touching left border (no padding)</li>
+                <li>Timestamp and note reference touching right border</li>
+                <li>Asset icon (⟐) and status indicator (✓) overlapping</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>Fixed Note Card:</h3>
+            
+            <!-- Test Note Card -->
+            <div class="note-card">
+                <div class="note-card-corners">
+                    <div class="note-corner-left">
+                        <span class="asset-icon" title="ALKS Asset">⟐</span>
+                        <span class="note-status-indicator" title="Ready for withdrawal">✓</span>
+                    </div>
+                    <div class="note-corner-right">
+                        <span class="note-timestamp" title="Created 2 hours ago">2h</span>
+                        <span class="note-reference" title="Note ID: abc123">#abc123</span>
+                    </div>
+                </div>
+                
+                <div class="note-header">
+                    <div class="note-title-section">
+                        <h4 class="note-title">ALKS</h4>
+                        <span class="note-amount">10.00000000 ALKS</span>
+                    </div>
+                    <div class="note-status">
+                        <span class="status-badge status-active">Active</span>
+                    </div>
+                </div>
+                
+                <div class="note-details">
+                    <div class="detail">
+                        <span class="detail-label">Asset ID</span>
+                        <span class="detail-value">alkanes:test:asset:123</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Commitment</span>
+                        <span class="detail-value monospace">0x1234567890abcdef...</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Leaf Index</span>
+                        <span class="detail-value">42</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">2 hours ago</span>
+                    </div>
+                </div>
+                
+                <div class="note-actions">
+                    <button class="btn btn-primary btn-sm">⬆️ Use for Withdrawal</button>
+                    <button class="btn btn-secondary btn-sm">📋 Copy Note</button>
+                    <button class="btn btn-danger btn-sm">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Expected Results:</h3>
+            <ul style="color: var(--success-600);">
+                <li>✅ Card title "ALKS" has proper left padding from border</li>
+                <li>✅ Corner elements (timestamp, note reference) don't touch right border</li>
+                <li>✅ Asset icon (⟐) and status indicator (✓) have proper spacing - no overlap</li>
+                <li>✅ Professional spacing throughout the card layout</li>
+                <li>✅ Consistent padding in all card sections</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>Multiple Cards Test:</h3>
+            
+            <!-- Second Test Card -->
+            <div class="note-card" style="margin-top: 1rem;">
+                <div class="note-card-corners">
+                    <div class="note-corner-left">
+                        <span class="asset-icon" title="TEST Asset">⧬</span>
+                        <span class="note-status-indicator" title="Ready for withdrawal">✓</span>
+                    </div>
+                    <div class="note-corner-right">
+                        <span class="note-timestamp" title="Created 1 day ago">1d</span>
+                        <span class="note-reference" title="Note ID: def456">#def456</span>
+                    </div>
+                </div>
+                
+                <div class="note-header">
+                    <div class="note-title-section">
+                        <h4 class="note-title">TEST</h4>
+                        <span class="note-amount">50.00000000 TEST</span>
+                    </div>
+                    <div class="note-status">
+                        <span class="status-badge status-active">Active</span>
+                    </div>
+                </div>
+                
+                <div class="note-details">
+                    <div class="detail">
+                        <span class="detail-label">Asset ID</span>
+                        <span class="detail-value">alkanes:test:asset:456</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Commitment</span>
+                        <span class="detail-value monospace">0xabcdef1234567890...</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Leaf Index</span>
+                        <span class="detail-value">84</span>
+                    </div>
+                    <div class="detail">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">1 day ago</span>
+                    </div>
+                </div>
+                
+                <div class="note-actions">
+                    <button class="btn btn-primary btn-sm">⬆️ Use for Withdrawal</button>
+                    <button class="btn btn-secondary btn-sm">📋 Copy Note</button>
+                    <button class="btn btn-danger btn-sm">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

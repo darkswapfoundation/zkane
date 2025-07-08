@@ -403,6 +403,70 @@ impl StorageService {
         Self
     }
 
+    /// Preload test deposit notes for demonstration purposes
+    pub fn preload_test_deposit_notes(&self) -> Result<(), ZKaneError> {
+        // Check if test notes already exist to avoid duplicates
+        let existing_notes = self.load_deposit_notes().unwrap_or_default();
+        if !existing_notes.is_empty() {
+            return Ok(()); // Already have notes, don't add test data
+        }
+
+        let test_notes = vec![
+            DepositNote {
+                secret: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef".to_string(),
+                nullifier: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890".to_string(),
+                commitment: "0x9876543210fedcba9876543210fedcba9876543210fedcba9876543210fedcba".to_string(),
+                asset_id: AlkaneId { block: 1, tx: 1 }, // ALKS
+                denomination: 100000000, // 1 ALKS
+                leaf_index: 42,
+                created_at: js_sys::Date::now() - 86400000.0 * 2.0, // 2 days ago
+            },
+            DepositNote {
+                secret: "0x2345678901bcdef02345678901bcdef02345678901bcdef02345678901bcdef0".to_string(),
+                nullifier: "0xbcdef02345678901bcdef02345678901bcdef02345678901bcdef02345678901".to_string(),
+                commitment: "0x8765432109edcba98765432109edcba98765432109edcba98765432109edcba9".to_string(),
+                asset_id: AlkaneId { block: 2, tx: 1 }, // TEST
+                denomination: 1000000000, // 10 TEST
+                leaf_index: 123,
+                created_at: js_sys::Date::now() - 3600000.0 * 6.0, // 6 hours ago
+            },
+            DepositNote {
+                secret: "0x3456789012cdef123456789012cdef123456789012cdef123456789012cdef12".to_string(),
+                nullifier: "0xcdef123456789012cdef123456789012cdef123456789012cdef123456789012".to_string(),
+                commitment: "0x7654321098dcba87654321098dcba87654321098dcba87654321098dcba876".to_string(),
+                asset_id: AlkaneId { block: 1, tx: 1 }, // ALKS
+                denomination: 1000000000, // 10 ALKS
+                leaf_index: 256,
+                created_at: js_sys::Date::now() - 1800000.0, // 30 minutes ago
+            },
+            DepositNote {
+                secret: "0x4567890123def234567890123def234567890123def234567890123def2345".to_string(),
+                nullifier: "0xdef234567890123def234567890123def234567890123def234567890123de".to_string(),
+                commitment: "0x6543210987cba96543210987cba96543210987cba96543210987cba96543".to_string(),
+                asset_id: AlkaneId { block: 3, tx: 1 }, // PRIV
+                denomination: 50000000, // 0.5 PRIV
+                leaf_index: 789,
+                created_at: js_sys::Date::now() - 86400000.0 * 7.0, // 1 week ago
+            },
+            DepositNote {
+                secret: "0x5678901234ef345678901234ef345678901234ef345678901234ef345678901".to_string(),
+                nullifier: "0xef345678901234ef345678901234ef345678901234ef345678901234ef3456".to_string(),
+                commitment: "0x5432109876ba95432109876ba95432109876ba95432109876ba95432109876".to_string(),
+                asset_id: AlkaneId { block: 2, tx: 1 }, // TEST
+                denomination: 500000000, // 5 TEST
+                leaf_index: 1024,
+                created_at: js_sys::Date::now() - 900000.0, // 15 minutes ago
+            },
+        ];
+
+        // Save each test note
+        for note in test_notes {
+            self.save_deposit_note(&note)?;
+        }
+
+        Ok(())
+    }
+
     /// Save deposit note to local storage
     pub fn save_deposit_note(&self, note: &DepositNote) -> Result<(), ZKaneError> {
         let storage = web_sys::window()
@@ -441,7 +505,35 @@ impl StorageService {
             }
         }
 
+        // Sort notes by creation date (newest first)
+        notes.sort_by(|a, b| b.created_at.partial_cmp(&a.created_at).unwrap_or(std::cmp::Ordering::Equal));
+        
         Ok(notes)
+    }
+
+    /// Delete a specific deposit note from local storage
+    pub fn delete_deposit_note(&self, commitment: &str) -> Result<(), ZKaneError> {
+        let storage = web_sys::window()
+            .and_then(|w| w.local_storage().ok().flatten())
+            .ok_or_else(|| ZKaneError::WasmError("Local storage not available".to_string()))?;
+
+        let key = format!("zkane_deposit_note_{}", commitment);
+        storage.remove_item(&key)
+            .map_err(|e| ZKaneError::WasmError(format!("Failed to delete note: {:?}", e)))?;
+
+        Ok(())
+    }
+
+    /// Get asset symbol for a given asset ID (helper for display)
+    pub fn get_asset_symbol(&self, asset_id: &AlkaneId) -> String {
+        // In a real implementation, this would query the asset registry
+        // For now, return mock data based on known assets
+        match (asset_id.block, asset_id.tx) {
+            (1, 1) => "ALKS".to_string(),
+            (2, 1) => "TEST".to_string(),
+            (3, 1) => "PRIV".to_string(),
+            _ => format!("{}:{}", asset_id.block, asset_id.tx),
+        }
     }
 
     /// Save user preferences

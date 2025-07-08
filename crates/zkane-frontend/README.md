@@ -19,8 +19,8 @@ ZKane Frontend is a full-stack Rust web application that provides a user-friendl
 - **Frontend Framework**: [Leptos](https://leptos.dev/) - Reactive web framework for Rust
 - **WebAssembly**: Compiled Rust code running in the browser
 - **Styling**: Custom CSS with CSS variables for theming
-- **Build Tool**: [wasm-pack](https://rustwasm.github.io/wasm-pack/) for WASM compilation
-- **Development Server**: basic-http-server for local development
+- **Build Tool**: [Trunk](https://trunkrs.dev/) for WASM compilation and development server
+- **Testing**: wasm-bindgen-test for browser-based testing
 
 ### Project Structure
 
@@ -39,7 +39,7 @@ crates/zkane-frontend/
 │   │   └── ...             # Other component modules
 │   └── styles.css          # Application styles
 ├── index.html              # Main HTML template
-├── build.rs                # Build script for WASM compilation
+├── Trunk.toml              # Trunk build configuration
 ├── Cargo.toml              # Dependencies and configuration
 └── README.md               # This file
 ```
@@ -78,7 +78,6 @@ crates/zkane-frontend/
 
 1. **Rust**: Install from [rustup.rs](https://rustup.rs/)
 2. **Trunk**: Install with `cargo install trunk` (for development with hot reloading)
-3. **cargo-watch**: Install with `cargo install cargo-watch` (optional, for enhanced file watching)
 
 ### Development Setup (Recommended - Hot Reloading)
 
@@ -105,35 +104,12 @@ The development server will automatically:
 - Hot reload the browser when changes are detected
 - Provide detailed error messages in the console
 
-### Alternative Setup (Manual Build)
-
-1. **Build the application**:
-   ```bash
-   # Using the build script
-   ./scripts/build-frontend.sh debug
-   
-   # Or manually with wasm-pack
-   cd crates/zkane-frontend
-   wasm-pack build --target web --dev
-   ```
-
-2. **Serve the application**:
-   ```bash
-   # The build script can serve automatically
-   ./scripts/build-frontend.sh debug
-   
-   # Or manually
-   cd crates/zkane-frontend/dist && basic-http-server
-   ```
-
 ### Production Build
 
 ```bash
 # Build optimized version
-../../scripts/build-frontend.sh release
-
-# Serve production build
-cd dist && basic-http-server
+cd crates/zkane-frontend
+trunk build --release
 ```
 
 ## Usage Guide
@@ -229,15 +205,6 @@ pub struct WithdrawalProof {
 ```bash
 # Run all frontend tests
 cargo test
-
-# Run WASM tests in browser
-wasm-pack test --headless --firefox
-
-# Run component tests
-cargo test frontend_component_tests
-
-# Run integration tests
-cargo test frontend_integration_tests
 ```
 
 ### Test Categories
@@ -259,11 +226,8 @@ cargo test frontend_integration_tests
 ### Build Configuration
 
 ```toml
-[package.metadata.wasm-pack.profile.release]
-wee-alloc = false
-
-[package.metadata.wasm-pack.profile.dev]
-debug-assertions = true
+[package.metadata.trunk.release]
+# Add release-specific settings here
 ```
 
 ## Deployment
@@ -274,7 +238,8 @@ The application builds to static files that can be hosted on any HTTP server:
 
 ```bash
 # Build for production
-../../scripts/build-frontend.sh release
+cd crates/zkane-frontend
+trunk build --release
 
 # Deploy dist/ directory to your hosting provider
 rsync -av dist/ user@server:/var/www/zkane/
@@ -326,12 +291,12 @@ The application works well with CDNs like Cloudflare, AWS CloudFront, or Netlify
 #### WASM Build Fails
 
 ```bash
-# Ensure wasm-pack is up to date
-cargo install wasm-pack --force
+# Ensure trunk is up to date
+cargo install trunk --force
 
 # Clear cache and rebuild
-rm -rf pkg target
-wasm-pack build --target web --dev
+rm -rf dist
+trunk build
 ```
 
 #### Application Won't Load

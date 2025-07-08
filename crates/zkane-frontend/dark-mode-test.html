@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Mode Test - Pool Status Indicators</title>
+    <link rel="stylesheet" href="src/styles.css">
+    <style>
+        body {
+            padding: 2rem;
+            font-family: var(--font-primary);
+        }
+        .test-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-primary);
+        }
+        .theme-toggle {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+        .theme-toggle button {
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .theme-toggle button.active {
+            background: var(--primary-500);
+            color: white;
+        }
+        .pool-card-demo {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .pool-card-corners {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1rem 1.5rem;
+            pointer-events: none;
+            z-index: 2;
+            height: 48px;
+        }
+        .pool-corner-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            pointer-events: auto;
+        }
+        .time-demo {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+        .time-examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .time-example {
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+    <div class="theme-toggle">
+        <h2>Theme Test</h2>
+        <button onclick="setTheme('light')" id="light-btn">Light</button>
+        <button onclick="setTheme('dark')" id="dark-btn" class="active">Dark</button>
+        <button onclick="setTheme('auto')" id="auto-btn">Auto</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Pool Status Indicator Test</h2>
+        <p>Testing the pool status indicator styling in different themes:</p>
+        
+        <div class="pool-card-demo">
+            <div class="pool-card-corners">
+                <div class="pool-corner-left">
+                    <span class="pool-type-icon" title="Privacy Pool">⊚</span>
+                    <span class="pool-status-indicator" title="Pool Status: Active">✓</span>
+                </div>
+            </div>
+            <div style="margin-top: 3rem;">
+                <h4>PRIV Pool</h4>
+                <p>Active pool with status indicator in top-left corner</p>
+            </div>
+        </div>
+
+        <div class="pool-card-demo">
+            <div class="pool-card-corners">
+                <div class="pool-corner-left">
+                    <span class="pool-type-icon" title="Privacy Pool">⊚</span>
+                    <span class="pool-status-indicator" title="Pool Status: Building">⏳</span>
+                </div>
+            </div>
+            <div style="margin-top: 3rem;">
+                <h4>TEST Pool</h4>
+                <p>Building pool with status indicator in top-left corner</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Time Format Test</h2>
+        <p>Testing the new time format (minutes → hours → days):</p>
+        
+        <div class="time-demo">
+            <h4>Time Format Examples:</h4>
+            <div class="time-examples">
+                <div class="time-example">
+                    <strong>30 seconds ago:</strong><br>
+                    <span id="time-30s">now</span>
+                </div>
+                <div class="time-example">
+                    <strong>5 minutes ago:</strong><br>
+                    <span id="time-5m">5m</span>
+                </div>
+                <div class="time-example">
+                    <strong>45 minutes ago:</strong><br>
+                    <span id="time-45m">45m</span>
+                </div>
+                <div class="time-example">
+                    <strong>2 hours ago:</strong><br>
+                    <span id="time-2h">2h</span>
+                </div>
+                <div class="time-example">
+                    <strong>18 hours ago:</strong><br>
+                    <span id="time-18h">18h</span>
+                </div>
+                <div class="time-example">
+                    <strong>3 days ago:</strong><br>
+                    <span id="time-3d">3d</span>
+                </div>
+                <div class="time-example">
+                    <strong>15 days ago:</strong><br>
+                    <span id="time-15d">15d</span>
+                </div>
+                <div class="time-example">
+                    <strong>120 days ago:</strong><br>
+                    <span id="time-120d">120d</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Update button states
+            document.querySelectorAll('.theme-toggle button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(theme + '-btn').classList.add('active');
+        }
+
+        // Test the time format function
+        function formatRelativeTime(timestamp) {
+            const now = Date.now() / 1000.0;
+            const diff = now - timestamp;
+            
+            if (diff < 60.0) {
+                return "now";
+            } else if (diff < 3600.0) {
+                return Math.floor(diff / 60.0) + "m";
+            } else if (diff < 86400.0) {
+                return Math.floor(diff / 3600.0) + "h";
+            } else {
+                return Math.floor(diff / 86400.0) + "d";
+            }
+        }
+
+        // Update time examples with actual calculations
+        const now = Date.now() / 1000.0;
+        document.getElementById('time-30s').textContent = formatRelativeTime(now - 30);
+        document.getElementById('time-5m').textContent = formatRelativeTime(now - 300);
+        document.getElementById('time-45m').textContent = formatRelativeTime(now - 2700);
+        document.getElementById('time-2h').textContent = formatRelativeTime(now - 7200);
+        document.getElementById('time-18h').textContent = formatRelativeTime(now - 64800);
+        document.getElementById('time-3d').textContent = formatRelativeTime(now - 259200);
+        document.getElementById('time-15d').textContent = formatRelativeTime(now - 1296000);
+        document.getElementById('time-120d').textContent = formatRelativeTime(now - 10368000);
+    </script>
+</body>
+</html>

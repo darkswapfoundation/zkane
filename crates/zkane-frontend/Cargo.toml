@@ -24,7 +24,8 @@ web-sys = { version = "0.3", features = [
   "Event", "EventTarget", "MouseEvent", "InputEvent",
   "Response", "Request", "RequestInit", "Headers",
   "Crypto", "SubtleCrypto", "CryptoKey", "Blob", "BlobPropertyBag",
-  "Url", "HtmlAnchorElement", "Storage", "Location"
+  "Url", "HtmlAnchorElement", "Storage", "Location",
+  "Clipboard", "Navigator"
 ] }
 
 # Serialization
