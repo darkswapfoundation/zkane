@@ -99,6 +99,54 @@ impl ZKaneService {
     }
 }
 
+use deezel_web::{
+    wallet_provider::{BrowserWalletProvider, WalletConnector, WalletInfo},
+    AlkanesProvider, DeezelError, WalletProvider,
+};
+
+#[derive(Clone)]
+pub struct WalletService {
+    pub connector: WalletConnector,
+    pub available_wallets: RwSignal<Vec<WalletInfo>>,
+    pub connected_wallet: RwSignal<Option<BrowserWalletProvider>>,
+}
+
+impl WalletService {
+    pub fn new() -> Self {
+        Self {
+            connector: WalletConnector::new(),
+            available_wallets: create_rw_signal(Vec::new()),
+            connected_wallet: create_rw_signal(None),
+        }
+    }
+
+    pub async fn detect_wallets(&self) {
+        if let Ok(wallets) = self.connector.detect_wallets().await {
+            self.available_wallets.set(wallets);
+        }
+    }
+
+    pub async fn connect(&self, wallet_info: WalletInfo) -> Result<(), DeezelError> {
+        // TODO: Make these URLs configurable
+        let provider = BrowserWalletProvider::connect(
+            wallet_info,
+            "http://localhost:8332".to_string(),
+            "http://localhost:8080".to_string(),
+            "regtest".to_string(),
+        )
+        .await?;
+        self.connected_wallet.set(Some(provider));
+        Ok(())
+    }
+
+    pub async fn disconnect(&self) {
+        if let Some(mut wallet) = self.connected_wallet.get_untracked() {
+            let _ = wallet.disconnect().await;
+            self.connected_wallet.set(None);
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct AlkanesService;
 
@@ -108,100 +156,72 @@ impl AlkanesService {
     }
 
     /// Get available alkane assets for the user
-    pub async fn get_user_assets(&self, _address: &str) -> Result<Vec<AssetBalance>, ZKaneError> {
-        // In a real implementation, this would query the alkanes indexer
-        // For now, return mock data based on common alkanes assets
-        Ok(vec![
-            AssetBalance {
-                asset_id: AlkaneId { block: 1, tx: 1 },
-                symbol: "ALKS".to_string(),
-                name: "Alkanes Token".to_string(),
-                balance: 1000000000, // 10 ALKS
-                decimals: 8,
-                icon_url: Some("/assets/alks.png".to_string()),
-            },
-            AssetBalance {
-                asset_id: AlkaneId { block: 2, tx: 1 },
-                symbol: "TEST".to_string(),
-                name: "Test Token".to_string(),
-                balance: 5000000000, // 50 TEST
-                decimals: 8,
-                icon_url: Some("/assets/test.png".to_string()),
-            },
-            AssetBalance {
-                asset_id: AlkaneId { block: 3, tx: 1 },
-                symbol: "PRIV".to_string(),
-                name: "Privacy Coin".to_string(),
-                balance: 100000000, // 1 PRIV
-                decimals: 8,
-                icon_url: Some("/assets/priv.png".to_string()),
-            },
-        ])
+    pub async fn get_user_assets(
+        &self,
+        wallet_provider: &BrowserWalletProvider,
+        _address: &str,
+    ) -> Result<Vec<AssetBalance>, ZKaneError> {
+        let balances = AlkanesProvider::get_balance(wallet_provider, None)
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
+        let mut asset_balances = Vec::new();
+        for balance in balances {
+            asset_balances.push(AssetBalance {
+                asset_id: AlkaneId::from_str(&balance.alkane_id).unwrap_or_default(),
+                symbol: balance.symbol,
+                name: balance.name,
+                balance: balance.balance,
+                decimals: balance.decimals,
+                icon_url: None,
+            });
+        }
+        Ok(asset_balances)
     }
 
     /// Get privacy pools for assets
-    pub async fn get_privacy_pools(&self) -> Result<Vec<PoolInfo>, ZKaneError> {
-        // In a real implementation, this would query the zkane indexer
-        Ok(vec![
-            PoolInfo {
-                pool_id: AlkaneId { block: 6, tx: 1001 },
-                asset_id: AlkaneId { block: 1, tx: 1 },
-                asset_symbol: "ALKS".to_string(),
-                denomination: 100000000, // 1 ALKS
-                total_deposits: 150,
-                anonymity_set: 150,
-                created_at: js_sys::Date::now() - 86400000.0 * 30.0, // 30 days ago
-                last_deposit: js_sys::Date::now() - 3600000.0, // 1 hour ago
-            },
-            PoolInfo {
-                pool_id: AlkaneId { block: 6, tx: 1002 },
-                asset_id: AlkaneId { block: 1, tx: 1 },
-                asset_symbol: "ALKS".to_string(),
-                denomination: 1000000000, // 10 ALKS
-                total_deposits: 75,
-                anonymity_set: 75,
-                created_at: js_sys::Date::now() - 86400000.0 * 20.0, // 20 days ago
-                last_deposit: js_sys::Date::now() - 7200000.0, // 2 hours ago
-            },
-            PoolInfo {
-                pool_id: AlkaneId { block: 6, tx: 2001 },
-                asset_id: AlkaneId { block: 2, tx: 1 },
-                asset_symbol: "TEST".to_string(),
-                denomination: 1000000000, // 10 TEST
-                total_deposits: 200,
-                anonymity_set: 200,
-                created_at: js_sys::Date::now() - 86400000.0 * 45.0, // 45 days ago
-                last_deposit: js_sys::Date::now() - 1800000.0, // 30 minutes ago
-            },
-            PoolInfo {
-                pool_id: AlkaneId { block: 6, tx: 3001 },
-                asset_id: AlkaneId { block: 3, tx: 1 },
-                asset_symbol: "PRIV".to_string(),
-                denomination: 50000000, // 0.5 PRIV
-                total_deposits: 300,
-                anonymity_set: 300,
-                created_at: js_sys::Date::now() - 86400000.0 * 60.0, // 60 days ago
-                last_deposit: js_sys::Date::now() - 900000.0, // 15 minutes ago
-            },
-        ])
+    pub async fn get_privacy_pools(
+        &self,
+        wallet_provider: &BrowserWalletProvider,
+    ) -> Result<Vec<PoolInfo>, ZKaneError> {
+        let result = wallet_provider
+            .call(
+                &wallet_provider.web_provider().metashrew_rpc_url(),
+                "get_privacy_pools",
+                serde_json::Value::Null,
+                1,
+            )
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
+        serde_json::from_value(result).map_err(|e| ZKaneError::SerializationError(e.to_string()))
     }
 
     /// Create deposit transaction
     pub async fn create_deposit_transaction(
         &self,
+        wallet_provider: &BrowserWalletProvider,
         asset_id: &AlkaneId,
         amount: u128,
         pool_id: &AlkaneId,
         commitment: &str,
     ) -> Result<TransactionRequest, ZKaneError> {
-        // Generate witness envelope for deposit
         let witness_data = generate_deposit_witness(commitment)
             .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
 
-        // In a real implementation, this would build the actual transaction
-        // For now, return a mock transaction
+        let params = deezel_common::SendParams {
+            outputs: vec![(pool_id.to_string(), amount)],
+            fee_rate: 10,
+            ..Default::default()
+        };
+
+        let tx_hex = wallet_provider
+            .create_transaction(params)
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
         Ok(TransactionRequest {
-            tx_hex: "0200000001...".to_string(), // Mock transaction hex
+            tx_hex,
             witness_data,
             fee_rate: 10,
         })
@@ -210,10 +230,10 @@ impl AlkanesService {
     /// Create withdrawal transaction
     pub async fn create_withdrawal_transaction(
         &self,
+        wallet_provider: &BrowserWalletProvider,
         proof: &WithdrawalProof,
         outputs: &[TxOutput],
     ) -> Result<TransactionRequest, ZKaneError> {
-        // Generate witness envelope for withdrawal
         let witness_data = generate_withdrawal_witness(
             &proof.proof,
             &proof.merkle_root,
@@ -223,11 +243,27 @@ impl AlkanesService {
             0, // Mock leaf index
             &"0x1234".repeat(16), // Mock commitment
             &proof.outputs_hash,
-        ).map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
+        )
+        .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
 
-        // In a real implementation, this would build the actual transaction
+        let send_outputs = outputs
+            .iter()
+            .map(|o| (o.script_pubkey.clone(), o.value))
+            .collect();
+
+        let params = deezel_common::SendParams {
+            outputs: send_outputs,
+            fee_rate: 10,
+            ..Default::default()
+        };
+
+        let tx_hex = wallet_provider
+            .create_transaction(params)
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
         Ok(TransactionRequest {
-            tx_hex: "0200000001...".to_string(), // Mock transaction hex
+            tx_hex,
             witness_data,
             fee_rate: 10,
         })
@@ -236,12 +272,21 @@ impl AlkanesService {
     /// Broadcast transaction
     pub async fn broadcast_transaction(
         &self,
+        wallet_provider: &BrowserWalletProvider,
         tx_request: &TransactionRequest,
     ) -> Result<TransactionResponse, ZKaneError> {
-        // In a real implementation, this would broadcast to the network
-        // For now, return a mock response
+        let signed_tx = wallet_provider
+            .sign_transaction(tx_request.tx_hex.clone())
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
+        let txid = wallet_provider
+            .broadcast_transaction(signed_tx)
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
         Ok(TransactionResponse {
-            txid: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef".to_string(),
+            txid,
             status: TransactionStatus::Pending,
             confirmations: 0,
         })
@@ -250,13 +295,34 @@ impl AlkanesService {
     /// Get transaction status
     pub async fn get_transaction_status(
         &self,
+        wallet_provider: &BrowserWalletProvider,
         txid: &str,
     ) -> Result<TransactionResponse, ZKaneError> {
-        // Mock implementation
+        let status = wallet_provider
+            .get_tx_status(txid)
+            .await
+            .map_err(|e| ZKaneError::WasmError(e.to_string()))?;
+
+        let confirmed = status
+            .get("confirmed")
+            .and_then(|c| c.as_bool())
+            .unwrap_or(false);
+        let block_height = status.get("block_height").and_then(|h| h.as_u64());
+
+        let (status, confirmations) = if confirmed {
+            let tip = wallet_provider.get_blocks_tip_height().await.unwrap_or(0);
+            (
+                TransactionStatus::Confirmed,
+                tip.saturating_sub(block_height.unwrap_or(tip)) as u32,
+            )
+        } else {
+            (TransactionStatus::Pending, 0)
+        };
+
         Ok(TransactionResponse {
             txid: txid.to_string(),
-            status: TransactionStatus::Confirmed,
-            confirmations: 6,
+            status,
+            confirmations,
         })
     }
 }

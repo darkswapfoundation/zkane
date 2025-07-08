@@ -23,9 +23,89 @@ pub use about::*;
 use leptos::*;
 use crate::types::*;
 use crate::services::*;
+use deezel_web::wallet_provider::WalletInfo;
 
 #[component]
-pub fn DepositComponent() -> impl IntoView {
+pub fn WalletConnectorComponent() -> impl IntoView {
+    let wallet_service = expect_context::<WalletService>();
+    let show_wallet_modal = create_rw_signal(false);
+
+    let connected_wallet_view = move || {
+        wallet_service.connected_wallet.get().map(|wallet| {
+            let account = wallet.current_account().cloned();
+            view! {
+                <div class="wallet-connected">
+                    <span>{format!("Connected: {}", account.map(|a| a.address).unwrap_or_default())}</span>
+                    <button on:click=move |_| {
+                        let wallet_service = wallet_service.clone();
+                        spawn_local(async move {
+                            wallet_service.disconnect().await;
+                        });
+                    }>"Disconnect"</button>
+                </div>
+            }
+        })
+    };
+
+    let disconnected_wallet_view = move || {
+        view! {
+            <button on:click=move |_| show_wallet_modal.set(true)>
+                "Connect Wallet"
+            </button>
+        }
+    };
+
+    view! {
+        <div class="wallet-connector">
+            {move || if wallet_service.connected_wallet.get().is_some() {
+                connected_wallet_view().into_view()
+            } else {
+                disconnected_wallet_view().into_view()
+            }}
+
+            <Show when=show_wallet_modal>
+                <WalletSelectionModal show_wallet_modal />
+            </Show>
+        </div>
+    }
+}
+
+#[component]
+fn WalletSelectionModal(show_wallet_modal: RwSignal<bool>) -> impl IntoView {
+    let wallet_service = expect_context::<WalletService>();
+    let wallets = wallet_service.available_wallets;
+
+    let connect_wallet = move |wallet_info: WalletInfo| {
+        let wallet_service = wallet_service.clone();
+        spawn_local(async move {
+            let _ = wallet_service.connect(wallet_info).await;
+        });
+        show_wallet_modal.set(false);
+    };
+
+    view! {
+        <div class="modal-background" on:click=move |_| show_wallet_modal.set(false)>
+            <div class="modal-content" on:click=|e| e.stop_propagation()>
+                <h2>"Select a Wallet"</h2>
+                <For
+                    each=move || wallets.get()
+                    key=|wallet| wallet.id.clone()
+                    children=move |wallet| {
+                        view! {
+                            <button on:click=move |_| connect_wallet(wallet.clone())>
+                                <img src={wallet.icon.clone()} alt={wallet.name.clone()} width="32" height="32" />
+                                {wallet.name.clone()}
+                            </button>
+                        }
+                    }
+                />
+            </div>
+        </div>
+    }
+}
+ 
+ #[component]
+ pub fn DepositComponent() -> impl IntoView {
     let zkane_service = expect_context::<ZKaneService>();
     let alkanes_service = expect_context::<AlkanesService>();
     let notification_service = expect_context::<NotificationService>();
@@ -43,8 +123,13 @@ pub fn DepositComponent() -> impl IntoView {
         || (),
         move |_| {
             let alkanes_service = alkanes_service_for_assets.clone();
+            let wallet_service = expect_context::<WalletService>();
             async move {
-                alkanes_service.get_user_assets("user_address").await
+                if let Some(wallet_provider) = wallet_service.connected_wallet.get() {
+                    alkanes_service.get_user_assets(&wallet_provider, "user_address").await
+                } else {
+                    Err(ZKaneError::WasmError("Wallet not connected".to_string()))
+                }
             }
         },
     );
@@ -55,11 +140,13 @@ pub fn DepositComponent() -> impl IntoView {
         let alkanes_service = alkanes_service.clone();
         let notification_service = notification_service.clone();
         let storage_service = storage_service.clone();
+        let wallet_service = expect_context::<WalletService>();
         move |_: &()| {
             let zkane_service = zkane_service.clone();
             let alkanes_service = alkanes_service.clone();
             let notification_service = notification_service.clone();
             let storage_service = storage_service.clone();
+            let wallet_service = wallet_service.clone();
             let selected_asset = selected_asset.get();
             let amount_str = deposit_amount.get();
             
@@ -85,26 +172,31 @@ pub fn DepositComponent() -> impl IntoView {
                     set_deposit_status.set(DepositStatus::CreatingNote);
                     
                     // Create deposit note
-                    match zkane_service.create_deposit(asset.asset_id.clone(), amount).await {
-                        Ok(note) => {
-                            set_created_note.set(Some(note.clone()));
-                            set_deposit_status.set(DepositStatus::Complete(note.clone()));
-                            
-                            // Save note to storage if auto-save is enabled
-                            if let Err(e) = storage_service.save_deposit_note(&note) {
-                                log::warn!("Failed to save deposit note: {:?}", e);
+                    if let Some(wallet_provider) = wallet_service.connected_wallet.get() {
+                        match zkane_service.create_deposit(asset.asset_id.clone(), amount).await {
+                            Ok(note) => {
+                                set_created_note.set(Some(note.clone()));
+                                set_deposit_status.set(DepositStatus::Complete(note.clone()));
+
+                                // Save note to storage if auto-save is enabled
+                                if let Err(e) = storage_service.save_deposit_note(&note) {
+                                    log::warn!("Failed to save deposit note: {:?}", e);
+                                }
+
+                                notification_service.success(
+                                    "Deposit Note Created",
+                                    "Your deposit note has been created successfully. Save it securely!"
+                                );
+                            },
+                            Err(e) => {
+                                let error_msg = format!("Failed to create deposit note: {:?}", e);
+                                set_deposit_status.set(DepositStatus::Error(error_msg.clone()));
+                                notification_service.error("Deposit Failed", &error_msg);
                             }
-                            
-                            notification_service.success(
-                                "Deposit Note Created",
-                                "Your deposit note has been created successfully. Save it securely!"
-                            );
-                        },
-                        Err(e) => {
-                            let error_msg = format!("Failed to create deposit note: {:?}", e);
-                            set_deposit_status.set(DepositStatus::Error(error_msg.clone()));
-                            notification_service.error("Deposit Failed", &error_msg);
                         }
+                    } else {
+                        set_deposit_status.set(DepositStatus::Error("Wallet not connected".to_string()));
+                        notification_service.error("Wallet Not Connected", "Please connect a wallet to create a deposit");
                     }
                 } else {
                     set_deposit_status.set(DepositStatus::Error("No asset selected".to_string()));
@@ -182,6 +274,7 @@ pub fn WithdrawComponent() -> impl IntoView {
     let withdraw_action = Action::new(move |_: &()| {
         let zkane_service = zkane_service.clone();
         let notification_service = notification_service.clone();
+        let wallet_service = expect_context::<WalletService>();
         let note_json = deposit_note_json.get();
         let recipient = recipient_address.get();
         
@@ -224,20 +317,25 @@ pub fn WithdrawComponent() -> impl IntoView {
             };
             
             // Generate withdrawal proof
-            match zkane_service.generate_withdrawal_proof(&deposit_note, &outputs, &merkle_path).await {
-                Ok(proof) => {
-                    set_generated_proof.set(Some(proof.clone()));
-                    set_withdrawal_status.set(WithdrawalStatus::Complete(proof));
-                    notification_service.success(
-                        "Proof Generated",
-                        "Withdrawal proof generated successfully"
-                    );
-                },
-                Err(e) => {
-                    let error_msg = format!("Failed to generate proof: {:?}", e);
-                    set_withdrawal_status.set(WithdrawalStatus::Error(error_msg.clone()));
-                    notification_service.error("Proof Generation Failed", &error_msg);
+            if let Some(wallet_provider) = wallet_service.connected_wallet.get() {
+                match zkane_service.generate_withdrawal_proof(&deposit_note, &outputs, &merkle_path).await {
+                    Ok(proof) => {
+                        set_generated_proof.set(Some(proof.clone()));
+                        set_withdrawal_status.set(WithdrawalStatus::Complete(proof));
+                        notification_service.success(
+                            "Proof Generated",
+                            "Withdrawal proof generated successfully"
+                        );
+                    },
+                    Err(e) => {
+                        let error_msg = format!("Failed to generate proof: {:?}", e);
+                        set_withdrawal_status.set(WithdrawalStatus::Error(error_msg.clone()));
+                        notification_service.error("Proof Generation Failed", &error_msg);
+                    }
                 }
+            } else {
+                set_withdrawal_status.set(WithdrawalStatus::Error("Wallet not connected".to_string()));
+                notification_service.error("Wallet Not Connected", "Please connect a wallet to generate a proof");
             }
         }
     });
@@ -286,8 +384,13 @@ pub fn PoolListComponent() -> impl IntoView {
         || (),
         move |_| {
             let alkanes_service = alkanes_service.clone();
+            let wallet_service = expect_context::<WalletService>();
             async move {
-                alkanes_service.get_privacy_pools().await
+                if let Some(wallet_provider) = wallet_service.connected_wallet.get() {
+                    alkanes_service.get_privacy_pools(&wallet_provider).await
+                } else {
+                    Err(ZKaneError::WasmError("Wallet not connected".to_string()))
+                }
             }
         },
     );

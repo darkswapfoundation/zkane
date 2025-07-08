@@ -17,7 +17,17 @@ pub fn App() -> impl IntoView {
     let storage_service = StorageService::new();
     let zkane_service = ZKaneService::new();
     let alkanes_service = AlkanesService::new();
-    
+    let wallet_service = WalletService::new();
+
+    // Detect wallets on startup
+    let wallet_service_clone = wallet_service.clone();
+    create_resource(|| (), move |_| {
+        let wallet_service = wallet_service_clone.clone();
+        async move {
+            wallet_service.detect_wallets().await;
+        }
+    });
+
     // Global state
     let (app_config, _set_app_config) = create_signal(AppConfig::default());
     let (user_preferences, set_user_preferences) = create_signal(UserPreferences::default());
@@ -35,6 +45,7 @@ pub fn App() -> impl IntoView {
     provide_context(storage_service);
     provide_context(zkane_service);
     provide_context(alkanes_service);
+    provide_context(wallet_service.clone());
     provide_context(app_config);
     provide_context(user_preferences);
     provide_context(set_user_preferences);
@@ -43,7 +54,7 @@ pub fn App() -> impl IntoView {
         <Html lang="en" dir="ltr" attr:data-theme=move || {
             match user_preferences.get().theme {
                 Theme::Light => "light",
-                Theme::Dark => "dark", 
+                Theme::Dark => "dark",
                 Theme::Auto => "auto",
             }
         }/>
@@ -61,16 +72,24 @@ pub fn App() -> impl IntoView {
                 <NotificationContainer/>
                 
                 <main class="main-content">
-                    <Routes>
-                        <Route path="/" view=HomePage/>
-                        <Route path="/deposit" view=DepositPage/>
-                        <Route path="/withdraw" view=WithdrawPage/>
-                        <Route path="/pools" view=PoolsPage/>
-                        <Route path="/history" view=HistoryPage/>
-                        <Route path="/settings" view=SettingsPage/>
-                        <Route path="/help" view=HelpPage/>
-                        <Route path="/about" view=AboutPage/>
-                    </Routes>
+                    {move || {
+                        if wallet_service.connected_wallet.get().is_some() {
+                            view! {
+                                <Routes>
+                                    <Route path="/" view=HomePage/>
+                                    <Route path="/deposit" view=DepositPage/>
+                                    <Route path="/withdraw" view=WithdrawPage/>
+                                    <Route path="/pools" view=PoolsPage/>
+                                    <Route path="/history" view=HistoryPage/>
+                                    <Route path="/settings" view=SettingsPage/>
+                                    <Route path="/help" view=HelpPage/>
+                                    <Route path="/about" view=AboutPage/>
+                                </Routes>
+                            }.into_view()
+                        } else {
+                            view! { <WalletNotConnected/> }.into_view()
+                        }
+                    }}
                 </main>
 
                 <Footer/>
@@ -112,6 +131,7 @@ fn Header() -> impl IntoView {
                 </nav>
 
                 <div class="header-actions">
+                    <WalletConnectorComponent />
                     <ThemeToggle/>
                     <A href="/settings" class="action-button">
                         <span class="action-icon">"⚙️"</span>
@@ -296,8 +316,13 @@ fn QuickStats() -> impl IntoView {
         || (),
         move |_| {
             let alkanes_service = alkanes_service.clone();
+            let wallet_service = expect_context::<WalletService>();
             async move {
-                alkanes_service.get_privacy_pools().await
+                if let Some(wallet_provider) = wallet_service.connected_wallet.get() {
+                    alkanes_service.get_privacy_pools(&wallet_provider).await
+                } else {
+                    Err(ZKaneError::WasmError("Wallet not connected".to_string()))
+                }
             }
         }
     );
@@ -454,6 +479,19 @@ fn AboutPage() -> impl IntoView {
                 <p>"Privacy-preserving alkanes transactions using zero-knowledge proofs"</p>
             </div>
             <AboutComponent/>
+        </div>
+    }
+}
+
+#[component]
+fn WalletNotConnected() -> impl IntoView {
+    view! {
+        <div class="page wallet-not-connected">
+            <div class="page-header">
+                <h1>"Connect Your Wallet"</h1>
+                <p>"Please connect a wallet to use ZKane."</p>
+            </div>
+            <WalletConnectorComponent />
         </div>
     }
 }

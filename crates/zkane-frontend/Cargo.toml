@@ -52,8 +52,11 @@ getrandom = { version = "0.2", features = ["js"] }
 gloo-timers = { version = "0.3.0", features = ["futures"] }
 gloo-file = "0.3.0"
 
-# Development and testing dependencies
-[dev-dependencies]
+# Deezel Web
+deezel-web = { workspace = true }
+ 
+ # Development and testing dependencies
+ [dev-dependencies]
 wasm-bindgen = "0.2.99"
 wasm-bindgen-test = "0.3.42"
 web-sys = "0.3"

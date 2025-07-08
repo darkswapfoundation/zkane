@@ -29,8 +29,11 @@ protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch =
 metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "kungfuflex/v9.0.0-rc6" }
 metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "kungfuflex/v9.0.0-rc6" }
 
-# Bitcoin and cryptography
-bitcoin = "0.32"
+# Deezel Web
+deezel-web = { path = "/home/ubuntu/deezel/crates/deezel-web" }
+ 
+ # Bitcoin and cryptography
+ bitcoin = "0.32"
 sha2 = "0.10"
 blake2 = "0.10"
 hex = "0.4"
