@@ -8,6 +8,8 @@ repository = "https://github.com/zkane-project/zkane"
 
 [workspace]
 members = [
+    ".",
+    "alkanes/*",
     "crates/zkane-common",
     "crates/zkane-crypto",
     "crates/zkane-core",
@@ -15,25 +17,28 @@ members = [
 ]
 
 [workspace.dependencies]
-# Alkanes framework - using v0.5.1 tag
-alkanes = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2", features = ["test-utils"] }
-alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
-alkanes-runtime = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
-alkanes-macros = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+# Align with boiler's dependency versions exactly
+alkanes = { git = "https://github.com/kungfuflex/alkanes-rs", features = ["test-utils"] }
+alkanes-support = { git = "https://github.com/kungfuflex/alkanes-rs" }
+alkanes-runtime = { git = "https://github.com/kungfuflex/alkanes-rs" }
+alkanes-macros = { git = "https://github.com/kungfuflex/alkanes-rs" }
 
-# Protorune dependencies - using v0.5.1 tag
-protorune = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2", features = ["test-utils"] }
-protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs", branch = "kungfuflex/v0.5.2" }
+# Protorune dependencies - matching boiler
+protorune = { git = "https://github.com/kungfuflex/alkanes-rs", features = ["test-utils"] }
+protorune-support = { git = "https://github.com/kungfuflex/alkanes-rs" }
 
-# Metashrew dependencies - using v0.5.1 tag
-metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "kungfuflex/v9.0.0-rc6" }
-metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew", branch = "kungfuflex/v9.0.0-rc6" }
+# Metashrew dependencies - matching boiler
+metashrew-core = { git = "https://github.com/sandshrewmetaprotocols/metashrew", features = ["test-utils"] }
+metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew" }
 
-# Deezel Web
-deezel-web = { path = "/home/ubuntu/deezel/crates/deezel-web" }
+# Ordinals - matching boiler
+ordinals = { git = "https://github.com/kungfuflex/alkanes-rs" }
+
+ # Deezel Web
+ deezel-web = { path = "/home/ubuntu/deezel/crates/deezel-web" }
  
  # Bitcoin and cryptography
- bitcoin = "0.32"
+ bitcoin = { version = "0.32.4", features = ["rand"] }
 sha2 = "0.10"
 blake2 = "0.10"
 hex = "0.4"
@@ -47,7 +52,7 @@ ark-bn254 = "0.4"
 ark-serialize = "0.4"
 
 # WASM and web dependencies
-wasm-bindgen = "0.2.99"
+wasm-bindgen = "0.2.100"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 web-sys = "0.3"
@@ -58,7 +63,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 # Error handling
-anyhow = "1.0"
+anyhow = "1.0.94"
 thiserror = "1.0"
 
 # Async and utilities
@@ -66,15 +71,13 @@ tokio = { version = "1.0", features = ["macros", "rt", "time"] }
 once_cell = "1.0"
 
 # Testing dependencies
-wasm-bindgen-test = "0.3.42"
+wasm-bindgen-test = "0.3.49"
 hex_lit = "0.1"
 
 
-# Ordinals - using v0.5.1 tag
-ordinals = { git = "https://github.com/kungfuflex/alkanes-rs", tag = "v0.5.1" }
 
-# Protobuf
-protobuf = "3.0"
+# Protobuf - exact version expected by alkanes dependency
+protobuf = "3.7.1"
 
 # Math utilities
 ruint = "1.0"
@@ -106,13 +109,38 @@ tokio = { workspace = true }
 # Protobuf
 protobuf = { workspace = true }
 
-# Testing dependencies
+# Testing dependencies - Boiler pattern with clean test initialization
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }
+metashrew-core = { workspace = true, features = ["test-utils"] }
+metashrew-support = { workspace = true }
+protorune = { workspace = true, features = ["test-utils"] }
+protorune-support = { workspace = true }
+alkanes = { workspace = true, features = ["test-utils"] }
+alkanes-runtime = { workspace = true }
+ordinals = { workspace = true }
+hex_lit = { workspace = true }
+ctor = "0.2" # For test environment initialization
+
+# ZKane alkane contracts for testing
+zkane-pool = { path = "alkanes/zkane-pool" }
+zkane-factory = { path = "alkanes/zkane-factory" }
+
+# Build dependencies
+[build-dependencies]
+anyhow = "1.0.90"
+flate2 = "1.0.34"
+hex = "0.4.3"
+thiserror = "1.0"
 
 [features]
 default = ["std"]
 std = []
+wasm = []
+debug-log = ["alkanes/debug-log"]
+# Boiler pattern: Clean testing features
+test-native = ["std"]
+test-clean = []
 
 # WASM-specific configuration
 [lib]

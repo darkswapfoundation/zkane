@@ -1,5 +1,34 @@
+# ZKANE CHADSON v69.0.0 - Boiler Pattern Test Configuration
+# Purpose: Prevent WASM compilation and bytecode generation during testing
+# Eliminates: Bytecode dumps, ^^^ symbols, verbose linker output
+
 [build]
-target = "wasm32-unknown-unknown"
+# Force native compilation during tests - no WASM
+target-dir = "target"
+
+[env]
+# Environment variables to ensure clean testing
+ZKANE_SKIP_BUILD = { value = "1", condition = "cfg(test)" }
+CARGO_CFG_TEST = { value = "1", condition = "cfg(test)" }
+RUST_TEST_TIME_UNIT = "100,1000"
+RUST_TEST_TIME_INTEGRATION = "2000,10000"
 
 [target.wasm32-unknown-unknown]
-runner = "wasm-bindgen-test-runner"
+# Disable WASM target during testing
+rustflags = ["-C", "target-feature=+atomics,+bulk-memory"]
+
+# Test-specific configuration following boiler pattern
+[profile.test]
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 256
+
+# Ensure tests run in native mode only
+[alias]
+test-clean = "test --features test-clean"
+test-native = "test --features test-native --target x86_64-unknown-linux-gnu"

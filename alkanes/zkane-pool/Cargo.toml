@@ -21,6 +21,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 hex = { workspace = true }
 bitcoin = { workspace = true }
+sha2 = { workspace = true }
+getrandom = { workspace = true, features = ["js"] }
 
 [dev-dependencies]
 alkanes-runtime = { workspace = true, features = ["test-utils"] }
