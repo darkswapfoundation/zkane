@@ -18,6 +18,7 @@ A privacy pool implementation for alkanes assets using zero-knowledge proofs. ZK
 2. **ZKane Factory** (`alkanes/zkane-factory/`): Factory contract for creating and managing multiple pools
 3. **Noir Circuits** (`noir/withdraw/`): Zero-knowledge proof circuits for withdrawal validation
 4. **WASM Bindings** (`crates/zkane-wasm/`): Browser-compatible API for dapp integration
+5. **Frontend Application** (`crates/zkane-frontend/`): A web-based user interface for interacting with the privacy pool, built with Leptos and powered by `deezel-web`.
 
 ### Supporting Crates
 
@@ -66,6 +67,23 @@ cargo test zkane_integration
 cargo test privacy_pool_tests
 cargo test factory_integration
 ```
+
+### Running the Frontend Application
+
+The `zkane-frontend` crate provides a complete web application for interacting with the ZKane privacy pools. It is built with the [Leptos](https://leptos.dev/) framework and requires `trunk` to run.
+
+```bash
+# Install trunk if you don't have it
+cargo install --locked trunk
+
+# Navigate to the frontend directory
+cd crates/zkane-frontend
+
+# Run the development server
+trunk serve
+```
+
+The application will be available at `http://localhost:8080` by default.
 
 ## 📖 Usage
 
@@ -255,7 +273,8 @@ zkane/
 │   ├── zkane-common/          # Core types
 │   ├── zkane-crypto/          # Cryptographic primitives
 │   ├── zkane-core/            # High-level operations
-│   └── zkane-wasm/            # WASM bindings
+│   ├── zkane-wasm/            # WASM bindings
+│   └── zkane-frontend/        # Leptos frontend application
 ├── noir/                      # Zero-knowledge circuits
 │   └── withdraw/              # Withdrawal proof circuit
 ├── src/                       # Main library
@@ -276,6 +295,9 @@ cd noir/withdraw && nargo build
 
 # Build WASM bindings
 wasm-pack build crates/zkane-wasm --target web
+
+# Build and serve the frontend application
+cd crates/zkane-frontend && trunk serve
 
 # Build main library
 cargo build --release
