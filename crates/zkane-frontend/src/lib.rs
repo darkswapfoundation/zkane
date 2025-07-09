@@ -7,9 +7,9 @@ use leptos::*;
 use wasm_bindgen::prelude::*;
 
 mod app;
-mod components;
-mod services;
-mod types;
+pub mod components;
+pub mod services;
+pub mod types;
 mod utils;
 mod wasm_bindings;
 

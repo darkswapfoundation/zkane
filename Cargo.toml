@@ -36,6 +36,7 @@ ordinals = { git = "https://github.com/kungfuflex/alkanes-rs" }
 
  # Deezel Web
  deezel-web = { path = "/home/ubuntu/deezel/crates/deezel-web" }
+ deezel-common = { path = "/home/ubuntu/deezel/crates/deezel-common" }
  
  # Bitcoin and cryptography
  bitcoin = { version = "0.32.4", features = ["rand"] }

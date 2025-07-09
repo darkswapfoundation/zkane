@@ -21,6 +21,15 @@ impl AlkaneId {
     }
 }
 
+impl From<&deezel_web::AlkaneId> for AlkaneId {
+    fn from(alkane_id: &deezel_web::AlkaneId) -> Self {
+        Self {
+            block: alkane_id.block as u128,
+            tx: alkane_id.tx as u128,
+        }
+    }
+}
+
 // JsDepositNote for frontend compatibility
 #[derive(Clone, Debug)]
 pub struct JsDepositNote {

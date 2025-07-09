@@ -55,6 +55,7 @@ gloo-file = "0.3.0"
 
 # Deezel Web
 deezel-web = { workspace = true }
+deezel-common = { workspace = true }
  
  # Development and testing dependencies
  [dev-dependencies]

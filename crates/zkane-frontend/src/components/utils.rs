@@ -326,7 +326,7 @@ pub fn NoteCard(
                                         notification_service_delete.success("Deleted", "Deposit note deleted successfully");
                                         // Trigger page refresh safely
                                         if let Some(window) = web_sys::window() {
-                                            if let Ok(Some(location)) = window.location().href() {
+                                            if let Ok(_location) = window.location().href() {
                                                 let _ = window.location().reload();
                                             }
                                         }

@@ -30,40 +30,41 @@ pub fn WalletConnectorComponent() -> impl IntoView {
     let wallet_service = expect_context::<WalletService>();
     let show_wallet_modal = create_rw_signal(false);
 
-    let connected_wallet_view = move || {
-        wallet_service.connected_wallet.get().map(|wallet| {
-            let account = wallet.current_account().cloned();
-            view! {
-                <div class="wallet-connected">
-                    <span>{format!("Connected: {}", account.map(|a| a.address).unwrap_or_default())}</span>
-                    <button on:click=move |_| {
-                        let wallet_service = wallet_service.clone();
-                        spawn_local(async move {
-                            wallet_service.disconnect().await;
-                        });
-                    }>"Disconnect"</button>
-                </div>
-            }
-        })
-    };
+    let is_connected = create_memo(move |_| wallet_service.connected_wallet.get().is_some());
+    let account_address = create_memo(move |_| {
+        wallet_service.connected_wallet.get()
+            .and_then(|w| w.current_account().cloned())
+            .map(|a| a.address)
+            .unwrap_or_default()
+    });
 
-    let disconnected_wallet_view = move || {
-        view! {
-            <button on:click=move |_| show_wallet_modal.set(true)>
-                "Connect Wallet"
-            </button>
+    let disconnect = {
+        let wallet_service = wallet_service.clone();
+        move |_| {
+            let wallet_service = wallet_service.clone();
+            spawn_local(async move {
+                wallet_service.disconnect().await;
+            });
         }
     };
 
     view! {
         <div class="wallet-connector">
-            {move || if wallet_service.connected_wallet.get().is_some() {
-                connected_wallet_view().into_view()
-            } else {
-                disconnected_wallet_view().into_view()
-            }}
+            <Show
+                when=move || is_connected.get()
+                fallback=move || view! {
+                    <button on:click=move |_| show_wallet_modal.set(true)>
+                        "Connect Wallet"
+                    </button>
+                }
+            >
+                <div class="wallet-connected">
+                    <span>{move || format!("Connected: {}", account_address.get())}</span>
+                    <button on:click=disconnect.clone()>"Disconnect"</button>
+                </div>
+            </Show>
 
-            <Show when=show_wallet_modal>
+            <Show when=move || show_wallet_modal.get()>
                 <WalletSelectionModal show_wallet_modal />
             </Show>
         </div>
@@ -91,10 +92,14 @@ fn WalletSelectionModal(show_wallet_modal: RwSignal<bool>) -> impl IntoView {
                     each=move || wallets.get()
                     key=|wallet| wallet.id.clone()
                     children=move |wallet| {
+                        let wallet_clone = wallet.clone();
                         view! {
-                            <button on:click=move |_| connect_wallet(wallet.clone())>
-                                <img src={wallet.icon.clone()} alt={wallet.name.clone()} width="32" height="32" />
-                                {wallet.name.clone()}
+                            <button on:click={
+                            let connect_wallet = connect_wallet.clone();
+                            move |_| connect_wallet(wallet.clone())
+                            }>
+                                <img src={wallet_clone.icon.clone()} alt={wallet_clone.name.clone()} width="32" height="32" />
+                                {wallet_clone.name.clone()}
                             </button>
                         }
                     }

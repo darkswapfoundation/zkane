@@ -1,5 +1,6 @@
 //! Service layer for ZKane Frontend application
 
+use std::sync::Arc;
 use crate::types::*;
 use crate::wasm_bindings::*;
 use leptos::*;
@@ -101,12 +102,12 @@ impl ZKaneService {
 
 use deezel_web::{
     wallet_provider::{BrowserWalletProvider, WalletConnector, WalletInfo},
-    AlkanesProvider, DeezelError, WalletProvider,
+    AlkanesProvider, DeezelError, WalletProvider, JsonRpcProvider, EsploraProvider,
 };
 
 #[derive(Clone)]
 pub struct WalletService {
-    pub connector: WalletConnector,
+    pub connector: Arc<WalletConnector>,
     pub available_wallets: RwSignal<Vec<WalletInfo>>,
     pub connected_wallet: RwSignal<Option<BrowserWalletProvider>>,
 }
@@ -114,7 +115,7 @@ pub struct WalletService {
 impl WalletService {
     pub fn new() -> Self {
         Self {
-            connector: WalletConnector::new(),
+            connector: Arc::new(WalletConnector::new()),
             available_wallets: create_rw_signal(Vec::new()),
             connected_wallet: create_rw_signal(None),
         }
@@ -128,13 +129,7 @@ impl WalletService {
 
     pub async fn connect(&self, wallet_info: WalletInfo) -> Result<(), DeezelError> {
         // TODO: Make these URLs configurable
-        let provider = BrowserWalletProvider::connect(
-            wallet_info,
-            "http://localhost:8332".to_string(),
-            "http://localhost:8080".to_string(),
-            "regtest".to_string(),
-        )
-        .await?;
+        let provider = BrowserWalletProvider::connect(wallet_info, "regtest".to_string()).await?;
         self.connected_wallet.set(Some(provider));
         Ok(())
     }
@@ -168,11 +163,11 @@ impl AlkanesService {
         let mut asset_balances = Vec::new();
         for balance in balances {
             asset_balances.push(AssetBalance {
-                asset_id: AlkaneId::from_str(&balance.alkane_id).unwrap_or_default(),
+                asset_id: AlkaneId::from(&balance.alkane_id),
                 symbol: balance.symbol,
                 name: balance.name,
                 balance: balance.balance,
-                decimals: balance.decimals,
+                decimals: 0,
                 icon_url: None,
             });
         }
@@ -186,7 +181,7 @@ impl AlkanesService {
     ) -> Result<Vec<PoolInfo>, ZKaneError> {
         let result = wallet_provider
             .call(
-                &wallet_provider.web_provider().metashrew_rpc_url(),
+                &wallet_provider.web_provider().sandshrew_rpc_url(),
                 "get_privacy_pools",
                 serde_json::Value::Null,
                 1,
@@ -209,10 +204,14 @@ impl AlkanesService {
         let witness_data = generate_deposit_witness(commitment)
             .map_err(|e| ZKaneError::WasmError(format!("{:?}", e)))?;
 
-        let params = deezel_common::SendParams {
-            outputs: vec![(pool_id.to_string(), amount)],
-            fee_rate: 10,
-            ..Default::default()
+        let params = deezel_web::SendParams {
+            address: pool_id.to_string(),
+            amount: amount as u64,
+            fee_rate: Some(10.0),
+            from_address: None,
+            change_address: None,
+            send_all: false,
+            auto_confirm: false,
         };
 
         let tx_hex = wallet_provider
@@ -249,12 +248,16 @@ impl AlkanesService {
         let send_outputs = outputs
             .iter()
             .map(|o| (o.script_pubkey.clone(), o.value))
-            .collect();
+            .collect::<Vec<(String, u128)>>();
 
-        let params = deezel_common::SendParams {
-            outputs: send_outputs,
-            fee_rate: 10,
-            ..Default::default()
+        let params = deezel_web::SendParams {
+            address: send_outputs[0].0.clone(),
+            amount: send_outputs[0].1 as u64,
+            fee_rate: Some(10.0),
+            from_address: None,
+            change_address: None,
+            send_all: false,
+            auto_confirm: false,
         };
 
         let tx_hex = wallet_provider
