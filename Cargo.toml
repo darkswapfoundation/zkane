@@ -13,7 +13,7 @@ members = [
     "crates/zkane-common",
     "crates/zkane-crypto",
     "crates/zkane-core",
-    "crates/zkane-frontend",
+    "crates/zkane-frontend", "crates/test-harness",
 ]
 
 [workspace.dependencies]
