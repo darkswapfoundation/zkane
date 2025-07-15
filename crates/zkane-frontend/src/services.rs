@@ -166,7 +166,7 @@ impl AlkanesService {
                 asset_id: AlkaneId::from(&balance.alkane_id),
                 symbol: balance.symbol,
                 name: balance.name,
-                balance: balance.balance,
+                balance: balance.balance as u128,
                 decimals: 0,
                 icon_url: None,
             });

@@ -63,6 +63,8 @@
 pub mod hash;
 pub mod poseidon;
 pub mod merkle;
+pub mod zkp;
+pub mod gadgets;
 
 use anyhow::Result;
 use zkane_common::{Secret, Nullifier, Commitment, NullifierHash};

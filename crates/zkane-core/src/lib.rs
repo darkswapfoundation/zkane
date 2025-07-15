@@ -26,9 +26,10 @@
 //! ### Basic Pool Operations
 //!
 //! ```rust
-//! use zkane_core::PrivacyPool;
+//! use zkane_core::{PrivacyPool, mock_provider::MockProvider};
 //! use zkane_common::ZKaneConfig;
 //! use alkanes_support::id::AlkaneId;
+//! use std::sync::Arc;
 //!
 //! // Create a new privacy pool
 //! let config = ZKaneConfig::new(
@@ -37,7 +38,8 @@
 //!     20,                                   // Tree height
 //!     vec![],                               // Verifier key
 //! );
-//! let mut pool = PrivacyPool::new(config)?;
+//! let provider = Arc::new(MockProvider::new(bitcoin::Network::Regtest));
+//! let mut pool = PrivacyPool::new(config, provider)?;
 //!
 //! // Check pool status
 //! let commitment_count = pool.commitment_count();
@@ -87,6 +89,10 @@ use zkane_common::{
 use zkane_crypto::{generate_commitment, MerkleTree};
 use alkanes_support::id::AlkaneId;
 use std::collections::HashSet;
+use deezel_common::traits::DeezelProvider;
+use std::sync::Arc;
+ 
+pub mod mock_provider;
 
 /// A privacy pool for a specific asset and denomination.
 ///
@@ -97,38 +103,46 @@ use std::collections::HashSet;
 /// # Example
 ///
 /// ```rust
-/// use zkane_core::PrivacyPool;
+/// use zkane_core::{PrivacyPool, mock_provider::MockProvider};
 /// use zkane_common::ZKaneConfig;
 /// use alkanes_support::id::AlkaneId;
+/// use deezel_common::traits::DeezelProvider;
+/// use std::sync::Arc;
 ///
+/// # fn test() -> Result<(), Box<dyn std::error::Error>> {
+/// let provider = MockProvider::new(bitcoin::Network::Regtest);
 /// let config = ZKaneConfig::new(
 ///     AlkaneId { block: 2, tx: 1 }.into(),
 ///     1000000,
 ///     20,
 ///     vec![],
 /// );
-/// let mut pool = PrivacyPool::new(config)?;
+/// let mut pool = PrivacyPool::new(config, Arc::new(provider))?;
 ///
 /// // Check initial state
 /// assert_eq!(pool.commitment_count(), 0);
 /// assert!(!pool.is_nullifier_spent(&[0u8; 32]));
-/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// # Ok(())
+/// # }
 /// ```
-pub struct PrivacyPool {
+pub struct PrivacyPool<P: DeezelProvider> {
     /// Configuration for this pool
     config: ZKaneConfig,
     /// Merkle tree storing commitments
     merkle_tree: MerkleTree,
     /// Set of spent nullifier hashes
     spent_nullifiers: HashSet<[u8; 32]>,
+    /// Provider for interacting with the Bitcoin network
+    provider: Arc<P>,
 }
 
-impl PrivacyPool {
+impl<P: DeezelProvider> PrivacyPool<P> {
     /// Create a new privacy pool with the given configuration.
     ///
     /// # Arguments
     ///
     /// * `config` - Configuration specifying asset, denomination, and tree parameters
+    /// * `provider` - A provider for interacting with the Bitcoin network
     ///
     /// # Returns
     ///
@@ -137,26 +151,32 @@ impl PrivacyPool {
     /// # Example
     ///
     /// ```rust
-    /// use zkane_core::PrivacyPool;
+    /// use zkane_core::{PrivacyPool, mock_provider::MockProvider};
     /// use zkane_common::ZKaneConfig;
     /// use alkanes_support::id::AlkaneId;
+    /// use deezel_common::traits::DeezelProvider;
+    /// use std::sync::Arc;
     ///
+    /// # fn test() -> Result<(), Box<dyn std::error::Error>> {
+    /// let provider = MockProvider::new(bitcoin::Network::Regtest);
     /// let config = ZKaneConfig::new(
     ///     AlkaneId { block: 2, tx: 1 }.into(),
     ///     1000000,
     ///     20,
     ///     vec![],
     /// );
-    /// let pool = PrivacyPool::new(config)?;
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// let pool = PrivacyPool::new(config, Arc::new(provider))?;
+    /// # Ok(())
+    /// # }
     /// ```
-    pub fn new(config: ZKaneConfig) -> ZKaneResult<Self> {
+    pub fn new(config: ZKaneConfig, provider: Arc<P>) -> ZKaneResult<Self> {
         let merkle_tree = MerkleTree::new(config.tree_height);
         
         Ok(Self {
             config,
             merkle_tree,
             spent_nullifiers: HashSet::new(),
+            provider,
         })
     }
 
@@ -177,17 +197,21 @@ impl PrivacyPool {
     /// # Example
     ///
     /// ```rust
-    /// use zkane_core::PrivacyPool;
-    /// use zkane_common::ZKaneConfig;
-    /// use alkanes_support::id::AlkaneId;
-    ///
-    /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
-    /// );
-    /// let pool = PrivacyPool::new(config)?;
+    /// # use zkane_core::{PrivacyPool, mock_provider::MockProvider};
+    /// # use zkane_common::ZKaneConfig;
+    /// # use alkanes_support::id::AlkaneId;
+    /// # use std::sync::Arc;
+    /// #
+    /// # fn test() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let provider = MockProvider::new(bitcoin::Network::Regtest);
+    /// # let config = ZKaneConfig::new(
+    /// #     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
+    /// # );
+    /// # let pool = PrivacyPool::new(config, Arc::new(provider))?;
     /// let root = pool.merkle_root();
     /// assert_eq!(root.len(), 32);
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn merkle_root(&self) -> [u8; 32] {
         self.merkle_tree.root()
@@ -215,18 +239,22 @@ impl PrivacyPool {
     /// # Example
     ///
     /// ```rust
-    /// use zkane_core::PrivacyPool;
-    /// use zkane_common::ZKaneConfig;
-    /// use alkanes_support::id::AlkaneId;
+    /// # use zkane_core::{PrivacyPool, mock_provider::MockProvider};
+    /// # use zkane_common::ZKaneConfig;
+    /// # use alkanes_support::id::AlkaneId;
+    /// # use std::sync::Arc;
+    /// #
+    /// # fn test() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let provider = MockProvider::new(bitcoin::Network::Regtest);
+    /// # let config = ZKaneConfig::new(
+    /// #     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
+    /// # );
+    /// # let pool = PrivacyPool::new(config, Arc::new(provider))?;
     ///
-    /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
-    /// );
-    /// let pool = PrivacyPool::new(config)?;
-    /// 
     /// // New nullifier should not be spent
     /// assert!(!pool.is_nullifier_spent(&[42u8; 32]));
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn is_nullifier_spent(&self, nullifier_hash: &[u8; 32]) -> bool {
         self.spent_nullifiers.contains(nullifier_hash)
@@ -253,23 +281,59 @@ impl PrivacyPool {
     /// # Example
     ///
     /// ```rust
-    /// use zkane_core::PrivacyPool;
-    /// use zkane_common::{ZKaneConfig, Commitment};
-    /// use alkanes_support::id::AlkaneId;
+    /// # use zkane_core::{PrivacyPool, mock_provider::MockProvider};
+    /// # use zkane_common::{ZKaneConfig, Commitment};
+    /// # use alkanes_support::id::AlkaneId;
+    /// # use std::sync::Arc;
+    /// #
+    /// # async fn test() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let mut provider = MockProvider::new(bitcoin::Network::Regtest);
+    /// # let config = ZKaneConfig::new(
+    /// #     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
+    /// # );
     ///
-    /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
-    /// );
-    /// let mut pool = PrivacyPool::new(config)?;
-    /// 
-    /// let commitment = Commitment::new([42u8; 32]);
-    /// let leaf_index = pool.add_commitment(&commitment)?;
+    /// let txid = "mock_txid";
+    /// let commitment_hex = "0000000000000000000000000000000000000000000000000000000000000042";
+    /// let mock_response = serde_json::json!({
+    ///     "vout": [
+    ///         {
+    ///             "scriptpubkey": format!("6a{}", commitment_hex),
+    ///             "value": 0
+    ///         }
+    ///     ]
+    /// });
+    /// provider.add_response(txid, mock_response);
+    /// # let mut pool = PrivacyPool::new(config, Arc::new(provider))?;
+    /// let leaf_index = pool.add_commitment(txid).await?;
     /// assert_eq!(leaf_index, 0);
     /// assert_eq!(pool.commitment_count(), 1);
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// # Ok(())
+    /// # }
     /// ```
-    pub fn add_commitment(&mut self, commitment: &Commitment) -> ZKaneResult<u64> {
-        let leaf_index = self.merkle_tree.insert(commitment)
+    pub async fn add_commitment(&mut self, txid: &str) -> ZKaneResult<u64> {
+        let tx_info = self.provider.get_tx(txid).await?;
+        
+        let vout = tx_info["vout"].as_array().ok_or(ZKaneError::TransactionParseError)?;
+        
+        let commitment = vout.iter()
+            .find_map(|output| {
+                let script_pubkey = output["scriptpubkey"].as_str()?;
+                if script_pubkey.starts_with("6a") { // OP_RETURN
+                    let data = hex::decode(&script_pubkey[2..]).ok()?;
+                    if data.len() == 32 {
+                        let mut commitment_bytes = [0u8; 32];
+                        commitment_bytes.copy_from_slice(&data);
+                        Some(Commitment::new(commitment_bytes))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            })
+            .ok_or(ZKaneError::CommitmentNotFound)?;
+
+        let leaf_index = self.merkle_tree.insert(&commitment)
             .map_err(|e| ZKaneError::CryptoError(e.to_string()))?;
         Ok(leaf_index.into())
     }
@@ -314,24 +378,28 @@ impl PrivacyPool {
     /// # Example
     ///
     /// ```rust
-    /// use zkane_core::PrivacyPool;
-    /// use zkane_common::ZKaneConfig;
-    /// use alkanes_support::id::AlkaneId;
+    /// # use zkane_core::{PrivacyPool, mock_provider::MockProvider};
+    /// # use zkane_common::ZKaneConfig;
+    /// # use alkanes_support::id::AlkaneId;
+    /// # use std::sync::Arc;
+    /// #
+    /// # fn test() -> Result<(), Box<dyn std::error::Error>> {
+    /// # let provider = MockProvider::new(bitcoin::Network::Regtest);
+    /// # let config = ZKaneConfig::new(
+    /// #     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
+    /// # );
+    /// # let mut pool = PrivacyPool::new(config, Arc::new(provider))?;
     ///
-    /// let config = ZKaneConfig::new(
-    ///     AlkaneId { block: 2, tx: 1 }.into(), 1000000, 20, vec![]
-    /// );
-    /// let mut pool = PrivacyPool::new(config)?;
-    /// 
     /// let nullifier_hash = [42u8; 32];
-    /// 
+    ///
     /// // First withdrawal should succeed
     /// pool.process_withdrawal(&nullifier_hash)?;
     /// assert!(pool.is_nullifier_spent(&nullifier_hash));
-    /// 
+    ///
     /// // Second withdrawal should fail
     /// assert!(pool.process_withdrawal(&nullifier_hash).is_err());
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn process_withdrawal(&mut self, nullifier_hash: &[u8; 32]) -> ZKaneResult<()> {
         if self.spent_nullifiers.contains(nullifier_hash) {
@@ -526,34 +594,51 @@ pub fn create_withdrawal_proof(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::mock_provider::MockProvider;
+    use std::sync::Arc;
 
-    fn create_test_config() -> ZKaneConfig {
-        use zkane_common::SerializableAlkaneId;
-        ZKaneConfig::new(
-            SerializableAlkaneId { block: 2, tx: 1 },
+    fn create_test_pool() -> PrivacyPool<MockProvider> {
+        let config = ZKaneConfig::new(
+            alkanes_support::id::AlkaneId { block: 2, tx: 1 }.into(),
             1000000,
             4, // Small tree for testing
             vec![],
-        )
+        );
+        let provider = Arc::new(MockProvider::new(bitcoin::Network::Regtest));
+        PrivacyPool::new(config, provider).unwrap()
     }
 
     #[test]
     fn test_privacy_pool_creation() {
-        let config = create_test_config();
-        let pool = PrivacyPool::new(config).unwrap();
+        let pool = create_test_pool();
         
         assert_eq!(pool.commitment_count(), 0);
         assert_eq!(pool.max_capacity(), 16); // 2^4
         assert!(!pool.is_full());
     }
 
-    #[test]
-    fn test_commitment_addition() {
-        let config = create_test_config();
-        let mut pool = PrivacyPool::new(config).unwrap();
+    #[tokio::test]
+    async fn test_commitment_addition() {
+        let mut pool = create_test_pool();
+        let txid = "mock_txid";
         
-        let commitment = Commitment::new([42u8; 32]);
-        let leaf_index = pool.add_commitment(&commitment).unwrap();
+        let commitment_hex = "0000000000000000000000000000000000000000000000000000000000000042";
+        let mock_response = serde_json::json!({
+            "vout": [
+                {
+                    "scriptpubkey": format!("6a{}", commitment_hex),
+                    "value": 0
+                }
+            ]
+        });
+        
+        pool.provider
+            .responses
+            .lock()
+            .unwrap()
+            .insert(txid.to_string(), mock_response);
+
+        let leaf_index = pool.add_commitment(txid).await.unwrap();
         
         assert_eq!(leaf_index, 0);
         assert_eq!(pool.commitment_count(), 1);
@@ -561,8 +646,7 @@ mod tests {
 
     #[test]
     fn test_nullifier_spending() {
-        let config = create_test_config();
-        let mut pool = PrivacyPool::new(config).unwrap();
+        let mut pool = create_test_pool();
         
         let nullifier_hash = [42u8; 32];
         
@@ -577,13 +661,28 @@ mod tests {
         assert!(pool.process_withdrawal(&nullifier_hash).is_err());
     }
 
-    #[test]
-    fn test_merkle_proof_generation() {
-        let config = create_test_config();
-        let mut pool = PrivacyPool::new(config).unwrap();
+    #[tokio::test]
+    async fn test_merkle_proof_generation() {
+        let mut pool = create_test_pool();
+        let txid = "mock_txid_proof";
+
+        let commitment_hex = "0000000000000000000000000000000000000000000000000000000000000042";
+        let mock_response = serde_json::json!({
+            "vout": [
+                {
+                    "scriptpubkey": format!("6a{}", commitment_hex),
+                    "value": 0
+                }
+            ]
+        });
         
-        let commitment = Commitment::new([42u8; 32]);
-        let leaf_index = pool.add_commitment(&commitment).unwrap();
+        pool.provider
+            .responses
+            .lock()
+            .unwrap()
+            .insert(txid.to_string(), mock_response);
+
+        let leaf_index = pool.add_commitment(txid).await.unwrap();
         
         let proof = pool.generate_merkle_proof(leaf_index).unwrap();
         assert_eq!(proof.len(), 4); // Tree height
@@ -601,14 +700,27 @@ mod tests {
         assert!(verify_deposit_note(&note).unwrap());
     }
 
-    #[test]
-    fn test_withdrawal_proof_verification() {
-        let config = create_test_config();
-        let mut pool = PrivacyPool::new(config).unwrap();
+    #[tokio::test]
+    async fn test_withdrawal_proof_verification() {
+        let mut pool = create_test_pool();
         
         // Add a commitment
-        let commitment = Commitment::new([42u8; 32]);
-        pool.add_commitment(&commitment).unwrap();
+        let txid = "mock_txid_withdraw";
+        let commitment_hex = "0000000000000000000000000000000000000000000000000000000000000042";
+        let mock_response = serde_json::json!({
+            "vout": [
+                {
+                    "scriptpubkey": format!("6a{}", commitment_hex),
+                    "value": 0
+                }
+            ]
+        });
+        pool.provider
+            .responses
+            .lock()
+            .unwrap()
+            .insert(txid.to_string(), mock_response);
+        pool.add_commitment(txid).await.unwrap();
         
         let nullifier_hash = NullifierHash::new([1u8; 32]);
         let proof = WithdrawalProof::new(
@@ -626,33 +738,82 @@ mod tests {
         assert!(!pool.verify_withdrawal_proof(&proof));
     }
 
-    #[test]
-    fn test_pool_capacity() {
-        let config = create_test_config();
-        let mut pool = PrivacyPool::new(config).unwrap();
+    #[tokio::test]
+    async fn test_pool_capacity() {
+        let mut pool = create_test_pool();
         
         // Fill the pool
         for i in 0..16 {
-            let commitment = Commitment::new([i as u8; 32]);
-            pool.add_commitment(&commitment).unwrap();
+            let txid = format!("mock_txid_{}", i);
+            let commitment_hex = format!("{:064x}", i);
+            let mock_response = serde_json::json!({
+                "vout": [
+                    {
+                        "scriptpubkey": format!("6a{}", commitment_hex),
+                        "value": 0
+                    }
+                ]
+            });
+            pool.provider
+                .responses
+                .lock()
+                .unwrap()
+                .insert(txid.to_string(), mock_response);
+            pool.add_commitment(&txid).await.unwrap();
         }
         
         assert!(pool.is_full());
         assert_eq!(pool.commitment_count(), 16);
         
         // Adding one more should fail
-        let commitment = Commitment::new([99u8; 32]);
-        assert!(pool.add_commitment(&commitment).is_err());
+        let txid = "mock_txid_full";
+        let commitment_hex = "0000000000000000000000000000000000000000000000000000000000000099";
+        let mock_response = serde_json::json!({
+            "vout": [
+                {
+                    "scriptpubkey": format!("6a{}", commitment_hex),
+                    "value": 0
+                }
+            ]
+        });
+        pool.provider
+            .responses
+            .lock()
+            .unwrap()
+            .insert(txid.to_string(), mock_response);
+        assert!(pool.add_commitment(txid).await.is_err());
     }
 
-    #[test]
-    fn test_pool_stats() {
-        let config = create_test_config();
-        let mut pool = PrivacyPool::new(config).unwrap();
+    #[tokio::test]
+    async fn test_pool_stats() {
+        let mut pool = create_test_pool();
         
         // Add some commitments and spend some nullifiers
-        pool.add_commitment(&Commitment::new([1u8; 32])).unwrap();
-        pool.add_commitment(&Commitment::new([2u8; 32])).unwrap();
+        let txid1 = "mock_txid_stats1";
+        let txid2 = "mock_txid_stats2";
+        let commitment_hex1 = "0000000000000000000000000000000000000000000000000000000000000001";
+        let commitment_hex2 = "0000000000000000000000000000000000000000000000000000000000000002";
+        let mock_response1 = serde_json::json!({
+            "vout": [ { "scriptpubkey": format!("6a{}", commitment_hex1), "value": 0 } ]
+        });
+        let mock_response2 = serde_json::json!({
+            "vout": [ { "scriptpubkey": format!("6a{}", commitment_hex2), "value": 0 } ]
+        });
+        pool.provider
+            .responses
+            .lock()
+            .unwrap()
+            .insert(txid1.to_string(), mock_response1);
+        pool.add_commitment(txid1).await.unwrap();
+        let mock_response2 = serde_json::json!({
+            "vout": [ { "scriptpubkey": format!("6a{}", commitment_hex2), "value": 0 } ]
+        });
+        pool.provider
+            .responses
+            .lock()
+            .unwrap()
+            .insert(txid2.to_string(), mock_response2);
+        pool.add_commitment(txid2).await.unwrap();
         pool.process_withdrawal(&[1u8; 32]).unwrap();
         
         let (commitments, spent, capacity) = pool.stats();

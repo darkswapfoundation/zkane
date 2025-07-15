@@ -10,6 +10,7 @@ repository = "https://github.com/zkane-project/zkane"
 members = [
     ".",
     "alkanes/*",
+    "crates/zkane-cli",
     "crates/zkane-common",
     "crates/zkane-crypto",
     "crates/zkane-core",
@@ -35,10 +36,11 @@ metashrew-support = { git = "https://github.com/sandshrewmetaprotocols/metashrew
 ordinals = { git = "https://github.com/kungfuflex/alkanes-rs" }
 
  # Deezel Web
- deezel-web = { path = "/home/ubuntu/deezel/crates/deezel-web" }
- deezel-common = { path = "/home/ubuntu/deezel/crates/deezel-common" }
+ deezel-web = { path = "../deezel/crates/deezel-web" }
+ deezel-common = { path = "../deezel/crates/deezel-common" }
+ deezel-sys = { path = "../deezel/crates/deezel-sys" }
  
- # Bitcoin and cryptography
+  # Bitcoin and cryptography
  bitcoin = { version = "0.32.4", features = ["rand"] }
 sha2 = "0.10"
 blake2 = "0.10"
@@ -51,6 +53,12 @@ ark-ec = "0.4"
 ark-std = "0.4"
 ark-bn254 = "0.4"
 ark-serialize = "0.4"
+ark-bls12-381 = { version = "0.4", features = ["curve"] }
+ark-groth16 = { version = "0.4", features = ["r1cs"] }
+ark-relations = "0.4"
+ark-r1cs-std = "0.4"
+ark-snark = "0.4"
+ark-crypto-primitives = { version = "0.4", features = ["crh", "sponge"] }
 
 # WASM and web dependencies
 wasm-bindgen = "0.2.100"
@@ -69,7 +77,11 @@ thiserror = "1.0"
 
 # Async and utilities
 tokio = { version = "1.0", features = ["macros", "rt", "time"] }
+async-trait = "0.1"
 once_cell = "1.0"
+clap = { version = "4.5.11", features = ["derive"] }
+env_logger = "0.11.5"
+futures = "0.3"
 
 # Testing dependencies
 wasm-bindgen-test = "0.3.49"

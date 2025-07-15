@@ -62,6 +62,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use alkanes_support::id::AlkaneId;
+use deezel_common::DeezelError;
 
 /// A serializable wrapper for AlkaneId.
 ///
@@ -776,6 +777,18 @@ pub enum ZKaneError {
     /// General cryptographic operation error
     #[error("Cryptographic error: {0}")]
     CryptoError(String),
+
+    /// Error from the Deezel provider
+    #[error("Provider error: {0}")]
+    DeezelError(#[from] DeezelError),
+
+    /// Error parsing a transaction
+    #[error("Failed to parse transaction")]
+    TransactionParseError,
+
+    /// Commitment not found in transaction
+    #[error("Commitment not found in transaction")]
+    CommitmentNotFound,
 }
 
 /// Result type for ZKane operations.

@@ -13,6 +13,7 @@ hex = { workspace = true }
 ruint = { workspace = true }
 bitcoin = { workspace = true }
 alkanes-support = { workspace = true }
+deezel-common = { workspace = true }
 rand = { workspace = true }
 thiserror = "1.0"
 

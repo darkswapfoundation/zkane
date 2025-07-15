@@ -4,4 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = { workspace = true }
+tokio = { workspace = true }
 wasm-bindgen-test = "0.3.42"
+
+deezel-common = { path = "../../../deezel/crates/deezel-common", features = ["native-deps"] }
+zkane-core = { path = "../zkane-core" }
+zkane-common = { path = "../zkane-common" }
+
+[dev-dependencies]
+wiremock = "0.6.0"
+serde_json = "1.0"
+bitcoin = { workspace = true }

@@ -1,0 +1,17 @@
+[package]
+name = "zkane-cli"
+version = "0.1.0"
+edition = "2021"
+description = "CLI for the ZKane privacy pool"
+authors = ["ZKane Team"]
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+deezel-sys = { workspace = true }
+deezel-common = { workspace = true }
+zkane-core = { path = "../zkane-core" }
+tokio = { workspace = true }
+env_logger = { workspace = true }
+futures = { workspace = true }
+hex = { workspace = true }
